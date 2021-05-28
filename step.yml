@@ -1,0 +1,21 @@
+title: |-
+  Step linter
+summary: |
+  Runs step linters
+description: |
+  Runs step linters
+type_tags:
+  - test
+is_always_run: false
+is_skippable: false
+
+toolkit:
+  bash:
+    entry_file: step.sh
+
+inputs:
+  - step_dir: .
+    opts:
+      title: "Step directory"
+      is_expand: true
+      is_required: true
