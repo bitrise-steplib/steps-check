@@ -19,3 +19,8 @@ inputs:
       title: "Step directory"
       is_expand: true
       is_required: true
+  - workflow:
+    opts:
+      title: "Step check workflow"
+      is_required: true
+      value_options: ["lint", "test"]

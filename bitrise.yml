@@ -2,7 +2,7 @@ format_version: 11
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
-  test:
+  ci:
     envs:
     - ORIG_WORKING_DIR: $BITRISE_SOURCE_DIR
     steps:
@@ -17,6 +17,12 @@ workflows:
         - path: ./_tmp
         - is_create_path: true
     - path::./:
-        title: Step Test
+        title: Run lint wf
         inputs:
           - step_dir: $ORIG_WORKING_DIR/..
+          - workflow: lint
+    - path::./:
+        title: Run test wf
+        inputs:
+          - step_dir: $ORIG_WORKING_DIR/..
+          - workflow: test
