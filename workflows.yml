@@ -17,3 +17,10 @@ workflows:
     - golint: {}
     - errcheck: {}
 
+  test:
+    steps:
+    - change-workdir:
+        inputs:
+        - path: $STEP_DIR
+    - go-list: {}
+    - go-test: {}
