@@ -17,12 +17,6 @@ workflows:
         - path: ./_tmp
         - is_create_path: true
     - path::./:
-        title: Run lint wf
+        title: Run current Step
         inputs:
-          - step_dir: $ORIG_WORKING_DIR/..
-          - workflow: lint
-    - path::./:
-        title: Run test wf
-        inputs:
-          - step_dir: $ORIG_WORKING_DIR/..
-          - workflow: test
+        - step_dir: $ORIG_WORKING_DIR

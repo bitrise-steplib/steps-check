@@ -9,9 +9,11 @@ type_tags:
 is_always_run: false
 is_skippable: false
 
+website: "https://github.com/bitrise-steplib/steps-check.git"
+
 toolkit:
-  bash:
-    entry_file: step.sh
+  go:
+    package_name: github.com/bitrise-steplib/steps-check
 
 inputs:
   - step_dir: .
@@ -19,8 +21,9 @@ inputs:
       title: "Step directory"
       is_expand: true
       is_required: true
-  - workflow:
+  - workflow: |-
+      lint
+      unit_test
     opts:
       title: "Step check workflow"
       is_required: true
-      value_options: ["lint", "test"]
