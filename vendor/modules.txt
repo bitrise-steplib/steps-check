@@ -1,3 +1,8 @@
+# github.com/bitrise-io/bitrise v0.0.0-20210519130014-380842fb41c1
+## explicit
+github.com/bitrise-io/bitrise/models
+# github.com/bitrise-io/envman v0.0.0-20200512105748-919e33f391ee
+github.com/bitrise-io/envman/models
 # github.com/bitrise-io/go-steputils v0.0.0-20210527075147-910ce7a105a1
 ## explicit
 github.com/bitrise-io/go-steputils/stepconf
@@ -6,7 +11,16 @@ github.com/bitrise-io/go-steputils/stepconf
 github.com/bitrise-io/go-utils/colorstring
 github.com/bitrise-io/go-utils/command
 github.com/bitrise-io/go-utils/errorutil
+github.com/bitrise-io/go-utils/fileutil
 github.com/bitrise-io/go-utils/log
 github.com/bitrise-io/go-utils/parseutil
 github.com/bitrise-io/go-utils/pathutil
 github.com/bitrise-io/go-utils/pointers
+github.com/bitrise-io/go-utils/sliceutil
+# github.com/bitrise-io/stepman v0.0.0-20210505110307-5c2296bcc558
+github.com/bitrise-io/stepman/models
+# github.com/ryanuber/go-glob v1.0.0
+github.com/ryanuber/go-glob
+# gopkg.in/yaml.v2 v2.4.0
+## explicit
+gopkg.in/yaml.v2
