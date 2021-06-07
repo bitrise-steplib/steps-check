@@ -85,7 +85,7 @@ func getE2EWorkflows(workflows map[string]models.WorkflowModel) (e2eTestWorkflow
 
 func createExecutorWorkflow(e2eWorkflows []string) models.WorkflowModel {
 	return models.WorkflowModel{
-		Title:    "e2e_test_executor_workflow",
+		Title:    generatedE2EWorkflowName,
 		AfterRun: e2eWorkflows,
 	}
 }
