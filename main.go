@@ -1,7 +1,6 @@
 package main
 
 import (
-	_ "embed"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -15,8 +14,34 @@ import (
 	"github.com/bitrise-io/go-utils/sliceutil"
 )
 
-//go:embed check.yml
-var checkConfig []byte
+var checkConfig = `format_version: 11
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+workflows:
+  lint:
+    steps:
+    - change-workdir@1:
+        inputs: 
+        - path: $STEP_DIR
+    - script@1:
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            pwd
+            stepman audit --step-yml ./step.yml
+    - go-list: {}
+    - golint: {}
+    - errcheck: {}
+
+  unit_test:
+    steps:
+    - change-workdir@1:
+        inputs: 
+        - path: $STEP_DIR
+    - go-list: {}
+    - go-test: {}
+`
 
 const e2eWorkflow = "e2e"
 
