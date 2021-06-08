@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	models2 "github.com/bitrise-io/envman/models"
+	stepmodel "github.com/bitrise-io/stepman/models"
 	"io/ioutil"
 	"strings"
 
@@ -84,8 +86,24 @@ func getE2EWorkflows(workflows map[string]models.WorkflowModel) (e2eTestWorkflow
 }
 
 func createExecutorWorkflow(e2eWorkflows []string) models.WorkflowModel {
+
+	var itemModels []models.StepListItemModel
+	for _, workflow := range e2eWorkflows {
+		script := `#!/usr/bin/env bash
+bitrise run ` + workflow + `
+`
+		title := "Running" + workflow
+		itemModels = append(itemModels, map[string]stepmodel.StepModel{"script@1": {
+			Title: &title,
+			Inputs: []models2.EnvironmentItemModel{
+				map[string]interface{}{
+					"content": script,
+				},
+			},
+		}})
+	}
 	return models.WorkflowModel{
-		Title:    generatedE2EWorkflowName,
-		AfterRun: e2eWorkflows,
+		Title: generatedE2EWorkflowName,
+		Steps: itemModels,
 	}
 }
