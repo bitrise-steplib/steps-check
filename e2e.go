@@ -81,7 +81,7 @@ func generateE2EWorkflow(sourceConfig, targetConfig string) error {
 		log.Warnf(warning)
 	}
 
-	appendE2EExecutorWorkflow(&bitriseConfig)
+	appendE2EExecutorWorkflow(&bitriseConfig, targetConfig)
 
 	if err = writeOutBitriseConfig(targetConfig, bitriseConfig); err != nil {
 		return fmt.Errorf("failed to write e2e test workflow to path (%s): %v", targetConfig, err)
