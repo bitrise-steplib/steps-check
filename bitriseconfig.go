@@ -29,9 +29,9 @@ func parseBitriseConfigFromBytes(configBytes []byte) (models.BitriseDataModel, [
 	return config, warnings, nil
 }
 
-func appendE2EExecutorWorkflow(bitriseConfig *models.BitriseDataModel) *models.BitriseDataModel {
+func appendE2EExecutorWorkflow(bitriseConfig *models.BitriseDataModel, targetConfig string) *models.BitriseDataModel {
 	e2eWorkflows := getE2EWorkflows(bitriseConfig.Workflows)
-	executorWorkflow := createExecutorWorkflow(e2eWorkflows)
+	executorWorkflow := createExecutorWorkflow(e2eWorkflows, targetConfig)
 	bitriseConfig.Workflows[executorWorkflow.Title] = executorWorkflow
 	return bitriseConfig
 }
@@ -85,12 +85,12 @@ func getE2EWorkflows(workflows map[string]models.WorkflowModel) (e2eTestWorkflow
 	return
 }
 
-func createExecutorWorkflow(e2eWorkflows []string) models.WorkflowModel {
+func createExecutorWorkflow(e2eWorkflows []string, targetConfig string) models.WorkflowModel {
 
 	var itemModels []models.StepListItemModel
 	for _, workflow := range e2eWorkflows {
 		script := `#!/usr/bin/env bash
-bitrise run ` + workflow + `
+bitrise run ` + workflow + ` --config ` + targetConfig + `
 `
 		title := "Running" + workflow
 		itemModels = append(itemModels, map[string]stepmodel.StepModel{"script@1": {
