@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	models2 "github.com/bitrise-io/envman/models"
+	envmodel "github.com/bitrise-io/envman/models"
 	stepmodel "github.com/bitrise-io/stepman/models"
 	"io/ioutil"
 	"strings"
@@ -95,7 +95,7 @@ bitrise run ` + workflow + ` --config ` + targetConfig + `
 		title := "Running " + workflow
 		itemModels = append(itemModels, map[string]stepmodel.StepModel{"script@1": {
 			Title: &title,
-			Inputs: []models2.EnvironmentItemModel{
+			Inputs: []envmodel.EnvironmentItemModel{
 				map[string]interface{}{
 					"content": script,
 				},
