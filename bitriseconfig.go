@@ -92,7 +92,7 @@ func createExecutorWorkflow(e2eWorkflows []string, targetConfig string) models.W
 		script := `#!/usr/bin/env bash
 bitrise run ` + workflow + ` --config ` + targetConfig + `
 `
-		title := "Running" + workflow
+		title := "Running " + workflow
 		itemModels = append(itemModels, map[string]stepmodel.StepModel{"script@1": {
 			Title: &title,
 			Inputs: []models2.EnvironmentItemModel{
