@@ -30,7 +30,11 @@ workflows:
             set -ex
             pwd
             stepman audit --step-yml ./step.yml
-    - go-list: {}
+    - go-list:
+        inputs:
+        - exclude: |-
+            */vendor/*
+            */mocks
     - golint: {}
     - errcheck: {}
 
