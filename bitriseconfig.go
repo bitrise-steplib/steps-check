@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	envmodel "github.com/bitrise-io/envman/models"
-	stepmodel "github.com/bitrise-io/stepman/models"
 	"io/ioutil"
 	"strings"
 
 	"github.com/bitrise-io/bitrise/models"
+	envmodel "github.com/bitrise-io/envman/models"
+	stepmodel "github.com/bitrise-io/stepman/models"
 	"gopkg.in/yaml.v2"
 )
 
