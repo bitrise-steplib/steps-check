@@ -2,6 +2,7 @@
 ## explicit
 github.com/bitrise-io/bitrise/models
 # github.com/bitrise-io/envman v0.0.0-20200512105748-919e33f391ee
+## explicit
 github.com/bitrise-io/envman/models
 # github.com/bitrise-io/go-steputils v0.0.0-20210527075147-910ce7a105a1
 ## explicit
@@ -18,6 +19,7 @@ github.com/bitrise-io/go-utils/pathutil
 github.com/bitrise-io/go-utils/pointers
 github.com/bitrise-io/go-utils/sliceutil
 # github.com/bitrise-io/stepman v0.0.0-20210505110307-5c2296bcc558
+## explicit
 github.com/bitrise-io/stepman/models
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
