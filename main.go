@@ -30,7 +30,7 @@ workflows:
             #!/bin/env bash
             set -ex
             
-            pip install yamllint
+            pip3 install yamllint
             yamllint .
     - script@1:
         inputs:
