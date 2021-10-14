@@ -27,11 +27,11 @@ workflows:
         title: YAML lint
         inputs:
         - content: |-
-			#!/bin/env bash
-			set -ex
-			
-			pip install yamllint
-			yamllint .
+            #!/bin/env bash
+            set -ex
+            
+            pip install yamllint
+            yamllint .
     - script@1:
         inputs:
         - content: |-
