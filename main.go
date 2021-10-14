@@ -30,7 +30,7 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            
+            echo $YAMLLINT_CONFIG_FILE
             pip3 install yamllint
             yamllint --format colored .
     - script@1:
