@@ -1,0 +1,21 @@
+extends: default
+
+ignore: |
+  vendor/
+
+rules:
+  line-length: disable
+  document-start: disable
+  indentation:
+    indent-sequences: false
+  comments-indentation:
+    level: error
+  comments:
+    level: error
+  octal-values: enable
+  quoted-strings:
+    quote-type: double
+    required: only-when-needed
+  braces:
+    min-spaces-inside: 1
+    max-spaces-inside: 1
