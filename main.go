@@ -30,9 +30,8 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            echo $YAMLLINT_CONFIG_FILE
             pip3 install yamllint
-            yamllint --format colored .
+            yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         inputs:
         - content: |-

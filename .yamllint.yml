@@ -2,6 +2,8 @@ extends: default
 
 ignore: |
   vendor/
+  .github/
+  _tmp/
 
 rules:
   line-length: disable
