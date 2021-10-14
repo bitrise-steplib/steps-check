@@ -28,10 +28,10 @@ workflows:
       inputs:
       - content: |-
         #!/bin/env bash
-	set -ex
+        set -ex
 	
-	pip install yamllint
-	yamllint .
+        pip install yamllint
+        yamllint .
     - script@1:
         inputs:
         - content: |-
