@@ -29,7 +29,7 @@ workflows:
       - content: |-
         #!/bin/env bash
         set -ex
-	
+        
         pip install yamllint
         yamllint .
     - script@1:
