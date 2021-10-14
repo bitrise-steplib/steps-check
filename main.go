@@ -24,7 +24,7 @@ workflows:
         inputs: 
         - path: $STEP_DIR
     - script:
-      title YAML lint
+      title: YAML lint
       inputs:
       - content: |-
         #!/bin/env bash
