@@ -35,8 +35,13 @@ workflows:
         - exclude: |-
             */vendor/*
             */mocks
-    - golint: {}
-    - errcheck: {}
+    - script@1:
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+            golangci-lint run
 
   unit_test:
     steps:
