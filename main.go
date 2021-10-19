@@ -36,8 +36,8 @@ workflows:
             */vendor/*
             */mocks
     - script@1:
+        title: Run golangci-lint
         inputs:
-        - title: Run golangci-lint
         - content: |-
             #!/bin/env bash
             set -xeo pipefail
