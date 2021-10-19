@@ -30,11 +30,6 @@ workflows:
             set -ex
             pwd
             stepman audit --step-yml ./step.yml
-    - go-list:
-        inputs:
-        - exclude: |-
-            */vendor/*
-            */mocks
     - script@1:
         title: Run golangci-lint
         inputs:
