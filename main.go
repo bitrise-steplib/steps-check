@@ -30,13 +30,14 @@ workflows:
             set -ex
             pwd
             stepman audit --step-yml ./step.yml
-    - go-list:
+    - script@1:
+        title: Run golangci-lint
         inputs:
-        - exclude: |-
-            */vendor/*
-            */mocks
-    - golint: {}
-    - errcheck: {}
+        - content: |-
+            #!/bin/env bash
+            set -xeo pipefail
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.42.1
+            golangci-lint run
 
   unit_test:
     steps:
