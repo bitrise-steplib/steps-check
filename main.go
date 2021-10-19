@@ -37,10 +37,11 @@ workflows:
             */mocks
     - script@1:
         inputs:
+		- title: Run golangci-lint
         - content: |-
             #!/bin/env bash
-            set -ex
-            go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
+            set -xeo pipefail
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.42.1
             golangci-lint run
 
   unit_test:
