@@ -29,6 +29,12 @@ workflows:
             #!/bin/env bash
             set -ex
             pwd
+
+            if [! -f ./step.yml]; then
+                echo "step.yml not found; skipping validation..."
+                exit 0
+            fi
+
             stepman audit --step-yml ./step.yml
     - script@1:
         title: Run golangci-lint
