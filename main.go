@@ -25,7 +25,7 @@ workflows:
         - path: $STEP_DIR
     - script@1:
         title: Audit step
-        run_if: "{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}"
+        run_if: '{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}'
         inputs:
         - content: |-
             #!/bin/env bash
