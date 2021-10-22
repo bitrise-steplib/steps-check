@@ -112,8 +112,10 @@ func mainR() error {
 	for _, wf := range config.Workflow {
 		workflowCmd := command.NewWithStandardOuts("bitrise", "run", wf, "--config", configPath)
 		workflowCmd.SetDir(config.WorkDir)
-		workflowCmd.AppendEnvs(fmt.Sprintf("STEP_DIR=%s", config.WorkDir))
-		workflowCmd.AppendEnvs(fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation))
+		workflowCmd.AppendEnvs(
+			fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
+			fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
+		)
 
 		fmt.Println()
 		log.Donef("$ %s", workflowCmd.PrintableCommandArgs())
