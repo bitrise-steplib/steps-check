@@ -24,16 +24,12 @@ workflows:
         inputs: 
         - path: $STEP_DIR
     - script@1:
+        run_if: "{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}"
         inputs:
         - content: |-
             #!/bin/env bash
             set -ex
             pwd
-
-            if [! -f ./step.yml]; then
-                echo "step.yml not found; skipping validation..."
-                exit 0
-            fi
 
             stepman audit --step-yml ./step.yml
     - script@1:
@@ -58,8 +54,9 @@ const e2eWorkflow = "e2e"
 
 // Config ...
 type Config struct {
-	WorkDir  string   `env:"step_dir,dir"`
-	Workflow []string `env:"workflow,multiline"`
+	WorkDir               string   `env:"step_dir,dir"`
+	Workflow              []string `env:"workflow,multiline"`
+	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 }
 
 func mainR() error {
@@ -115,6 +112,7 @@ func mainR() error {
 		workflowCmd := command.NewWithStandardOuts("bitrise", "run", wf, "--config", configPath)
 		workflowCmd.SetDir(config.WorkDir)
 		workflowCmd.AppendEnvs(fmt.Sprintf("STEP_DIR=%s", config.WorkDir))
+		workflowCmd.AppendEnvs(fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%s", config.SkipStepYMLValidation))
 
 		fmt.Println()
 		log.Donef("$ %s", workflowCmd.PrintableCommandArgs())
