@@ -24,6 +24,7 @@ workflows:
         inputs: 
         - path: $STEP_DIR
     - script@1:
+        title: Audit step
         run_if: "{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}"
         inputs:
         - content: |-
@@ -112,7 +113,7 @@ func mainR() error {
 		workflowCmd := command.NewWithStandardOuts("bitrise", "run", wf, "--config", configPath)
 		workflowCmd.SetDir(config.WorkDir)
 		workflowCmd.AppendEnvs(fmt.Sprintf("STEP_DIR=%s", config.WorkDir))
-		workflowCmd.AppendEnvs(fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%s", config.SkipStepYMLValidation))
+		workflowCmd.AppendEnvs(fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation))
 
 		fmt.Println()
 		log.Donef("$ %s", workflowCmd.PrintableCommandArgs())
