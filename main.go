@@ -33,11 +33,14 @@ workflows:
             pip3 install yamllint
             yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
+        title: Audit step
+        run_if: '{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}'
         inputs:
         - content: |-
             #!/bin/env bash
             set -ex
             pwd
+
             stepman audit --step-yml ./step.yml
     - script@1:
         title: Run golangci-lint
@@ -65,8 +68,9 @@ const yamllintEnvKey = "YAMLLINT_CONFIG_FILE"
 
 // Config ...
 type Config struct {
-	WorkDir  string   `env:"step_dir,dir"`
-	Workflow []string `env:"workflow,multiline"`
+	WorkDir               string   `env:"step_dir,dir"`
+	Workflow              []string `env:"workflow,multiline"`
+	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 }
 
 func mainR() error {
@@ -129,7 +133,10 @@ func mainR() error {
 	for _, wf := range config.Workflow {
 		workflowCmd := command.NewWithStandardOuts("bitrise", "run", wf, "--config", configPath)
 		workflowCmd.SetDir(config.WorkDir)
-		workflowCmd.AppendEnvs(fmt.Sprintf("STEP_DIR=%s", config.WorkDir))
+		workflowCmd.AppendEnvs(
+			fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
+			fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
+		)
 
 		fmt.Println()
 		log.Donef("$ %s", workflowCmd.PrintableCommandArgs())

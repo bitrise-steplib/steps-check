@@ -27,3 +27,9 @@ inputs:
     opts:
       title: "Step check workflow"
       is_required: true
+  - skip_step_yml_validation: "no"
+    opts:
+      title: "Skip step.yml validation"
+      value_options:
+      - "yes"
+      - "no"
