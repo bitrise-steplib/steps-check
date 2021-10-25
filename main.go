@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,6 +24,14 @@ workflows:
     - change-workdir@1:
         inputs: 
         - path: $STEP_DIR
+    - script:
+        title: YAML lint
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+            pip3 install yamllint
+            yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         inputs:
         - content: |-
@@ -48,7 +57,11 @@ workflows:
     - go-test: {}
 `
 
+//go:embed .yamllint.yml
+var yamllintConfig string
+
 const e2eWorkflow = "e2e"
+const yamllintEnvKey = "YAMLLINT_CONFIG_FILE"
 
 // Config ...
 type Config struct {
@@ -102,6 +115,14 @@ func mainR() error {
 
 	configPath := filepath.Join(tmpDir, "bitrise.yml")
 	if err := ioutil.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
+		return err
+	}
+
+	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
+	if err := ioutil.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
+		return err
+	}
+	if err := os.Setenv(yamllintEnvKey, yamllintPath); err != nil {
 		return err
 	}
 
