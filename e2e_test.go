@@ -1,0 +1,144 @@
+package main
+
+import (
+	"reflect"
+	"testing"
+)
+
+func Test_readE2EWorkflowsFromBytes(t *testing.T) {
+	tests := []struct {
+		name        string
+		configBytes []byte
+		want        []string
+		wantErr     bool
+	}{
+		{
+			"Test Case 1",
+			[]byte(`
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+  - ORIG_BITRISE_SOURCE_DIR: $BITRISE_SOURCE_DIR
+  # define these envs in your .bitrise.secrets.yml
+  - INVALID_SSH_PRIVATE_KEY: $INVALID_SSH_PRIVATE_KEY
+  - MISSING_NEWLINE_SSH_PRIVATE_KEY: $MISSING_NEWLINE_SSH_PRIVATE_KEY
+  - PEM_FORMAT_SSH_PRIVATE_KEY: $PEM_FORMAT_SSH_PRIVATE_KEY
+  - OPENSSH_FORMAT_SSH_PRIVATE_KEY: $OPENSSH_FORMAT_SSH_PRIVATE_KEY
+
+workflows:
+  test_pem_format_key:
+    envs:
+    - SSH_RSA_PRIVATE_KEY: $PEM_FORMAT_SSH_PRIVATE_KEY
+    after_run:
+    - _run
+    - _check_output
+
+  test_openssh_format_key:
+    envs:
+    - SSH_RSA_PRIVATE_KEY: $OPENSSH_FORMAT_SSH_PRIVATE_KEY
+    after_run:
+    - _run
+    - _check_output
+
+  test_missing_newline_key:
+    envs:
+    - SSH_RSA_PRIVATE_KEY: $MISSING_NEWLINE_SSH_PRIVATE_KEY
+    after_run:
+    - _run
+    - _check_output
+
+  utility_fail_invalid_key:
+    envs:
+    - SSH_RSA_PRIVATE_KEY: $INVALID_SSH_PRIVATE_KEY
+    after_run:
+    - _run
+    - _check_output
+
+  test_invalid_key:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -x
+            if [[ -n "$ORIG_BITRISE_SOURCE_DIR" ]]; then
+              cd $ORIG_BITRISE_SOURCE_DIR
+            fi
+
+            bitrise run utility_fail_invalid_key
+            if [[ $? != 1 ]]; then
+              echo "Invalid key did not fail the Step"
+              exit 1
+            fi
+
+  _run:
+    steps:
+    - change-workdir:
+        title: Switch working dir to test/_tmp dir
+        description: |-
+          To prevent step testing issues, like referencing relative
+          files with just './some-file', which would work for local tests
+          but not if the step is included in another bitrise.yml!
+        run_if: true
+        inputs:
+        - path: ../_tmp
+        - is_create_path: true
+    - script:
+        title: Remove SSH keys from agent
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -x
+            ssh-add -D
+            envman add --key KEY_PATH --value "./testsave/bitrise_step_activate_ssh_key"
+    - path::./:
+        run_if: true
+        inputs:
+        - ssh_rsa_private_key: $SSH_RSA_PRIVATE_KEY
+        - ssh_key_save_path: "$KEY_PATH"
+        - is_remove_other_identities: "true"
+        - verbose: true
+
+  _check_output:
+    steps:
+    - script:
+        title: Output check
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -e
+
+            echo "Loaded identities:"
+            ssh-add -l
+
+            if [[ ! -f $KEY_PATH ]]; then
+              echo "[!] Private key not found at path: $KEY_PATH"
+              exit 1
+            fi
+
+            if [ -z "$SSH_AUTH_SOCK" ] ; then
+              echo " [!] Missing: SSH_AUTH_SOCK"
+              exit 1
+            else
+              echo "-> SSH_AUTH_SOCK: $SSH_AUTH_SOCK"
+            fi
+`),
+			[]string{"test_pem_format_key", "test_openssh_format_key", "test_missing_newline_key", "test_invalid_key"},
+			false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := readE2EWorkflowsFromBytes(tt.configBytes)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("readE2EWorkflowsFromBytes() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("readE2EWorkflowsFromBytes() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
