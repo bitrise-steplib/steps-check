@@ -80,6 +80,7 @@ func sendAnalytics(client analytics.Client, workflow string, success bool, paren
 			"workflow":   workflow,
 			"status":     status,
 			"parent_url": parentURL,
+			"stack_id":   os.Getenv("BITRISEIO_STACK_ID"),
 		},
 	}); err != nil {
 		return err
