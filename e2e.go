@@ -50,10 +50,12 @@ func runE2E(commandFactory command.Factory, workDir string, segmentKey string, p
 		return err
 	}
 
+	client := analytics.New(segmentKey)
+	defer client.Close()
 	for _, workflow := range workflows {
 		err = runE2EWorkflow(commandFactory, workDir, e2eBitriseYMLPath, secrets, workflow)
 		if parentURL != "" {
-			if err := sendAnalytics(segmentKey, workflow, err == nil, parentURL); err != nil {
+			if err := sendAnalytics(client, workflow, err == nil, parentURL); err != nil {
 				return err
 			}
 		}
@@ -61,25 +63,17 @@ func runE2E(commandFactory command.Factory, workDir string, segmentKey string, p
 			return fmt.Errorf("failed to run workflow %s: %w", workflow, err)
 		}
 	}
-
 	return nil
 }
 
-func sendAnalytics(segmentKey string, workflow string, success bool, parentURL string) (err error) {
-	client := analytics.New(segmentKey)
-	defer func() {
-		err = client.Close()
-		if err != nil {
-			return
-		}
-	}()
+func sendAnalytics(client analytics.Client, workflow string, success bool, parentURL string) error {
 	var status string
 	if success {
 		status = "success"
 	} else {
 		status = "error"
 	}
-	if err = client.Enqueue(analytics.Track{
+	if err := client.Enqueue(analytics.Track{
 		UserId: unifiedCiAppID,
 		Event:  "ci_finished",
 		Properties: map[string]interface{}{
@@ -88,9 +82,9 @@ func sendAnalytics(segmentKey string, workflow string, success bool, parentURL s
 			"parent_url": parentURL,
 		},
 	}); err != nil {
-		return
+		return err
 	}
-	return
+	return nil
 }
 
 func readE2EWorkflows(configPath string) ([]string, error) {
