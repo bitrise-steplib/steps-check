@@ -16,64 +16,8 @@ import (
 	"github.com/bitrise-io/go-utils/sliceutil"
 )
 
-var checkConfig = `format_version: 11
-default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-
-workflows:
-  lint:
-    steps:
-    - change-workdir@1:
-        inputs: 
-        - path: $STEP_DIR
-    - script:
-        title: YAML lint
-        inputs:
-        - content: |-
-            #!/bin/env bash
-            set -ex
-            pip3 install yamllint
-            yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
-    - script@1:
-        title: Audit step
-        run_if: '{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}'
-        inputs:
-        - content: |-
-            #!/bin/env bash
-            set -ex
-            pwd
-
-            stepman audit --step-yml ./step.yml
-    - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@step-init:
-        title: Validate JSON schema
-        inputs:
-        - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/steplib-review-rules/step.schema.json
-        - yaml_path: ./step.yml
-        - warning_patterns: |-
-            I\[#\] S\[#/additionalProperties\] additionalProperties .+ not allowed
-            I\[#\] S\[#/required\] missing properties: .+
-            I\[#/summary\] S\[#/properties/summary/pattern\] does not match pattern "\^\.\{1,100\}\$"
-            I\[#/deps/(brew|apt_get)+/\d+/(name|bin_name)+\] S\[#/definitions/(BrewDepModel|AptGetDepModel)+/properties/(name|bin_name)+/not\] not failed
-            I\[#/(inputs|outputs)+/\d+/opts\] S\[#/definitions/EnvVarOpts/required\] missing properties: "summary"
-            I\[#/(inputs|outputs)+/\d+/opts/summary\] S\[#/definitions/EnvVarOpts/properties/summary/minLength\] length must be >= 1, but got 0
-            I\[#/inputs/\d+/.+\] S\[#/definitions/InputEnvVar/additionalProperties/type\] expected .+, but got .+
-            I\[#/inputs/\d+/opts/value_options\] S\[#/definitions/EnvVarOpts/properties/value_options/minItems\] minimum 2 items allowed, but found \d+ items
-    - script@1:
-        title: Run golangci-lint
-        inputs:
-        - content: |-
-            #!/bin/env bash
-            set -xeo pipefail
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.42.1
-            golangci-lint run
-
-  unit_test:
-    steps:
-    - change-workdir@1:
-        inputs: 
-        - path: $STEP_DIR
-    - go-list: {}
-    - go-test: {}
-`
+//go:embed checks.bitrise.yml
+var checkConfig string
 
 //go:embed .yamllint.yml
 var yamllintConfig string
