@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"fmt"
+	"github.com/bitrise-io/go-utils/env"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -71,11 +72,16 @@ type Config struct {
 	WorkDir               string   `env:"step_dir,dir"`
 	Workflow              []string `env:"workflow,multiline"`
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
+	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY, required"`
+	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 }
 
 func mainR() error {
+	envRepository := env.NewRepository()
+	commandFactory := command.NewFactory(envRepository)
 	var config Config
-	if err := stepconf.Parse(&config); err != nil {
+	configParser := stepconf.NewInputParser(envRepository)
+	if err := configParser.Parse(&config); err != nil {
 		return fmt.Errorf("Invalid inputs: %v", err)
 	}
 
@@ -104,7 +110,7 @@ func mainR() error {
 
 	if runE2EWorkflow {
 		log.Donef("Running '%s' workflow", e2eWorkflow)
-		if err := runE2E(config.WorkDir); err != nil {
+		if err := runE2E(commandFactory, config.WorkDir, config.SegmentWriteKey, config.ParentBuildURL); err != nil {
 			return fmt.Errorf("workflow %s failed: %v", e2eWorkflow, err)
 		}
 
@@ -131,13 +137,18 @@ func mainR() error {
 	}
 
 	for _, wf := range config.Workflow {
-		workflowCmd := command.NewWithStandardOuts("bitrise", "run", wf, "--config", configPath)
-		workflowCmd.SetDir(config.WorkDir)
-		workflowCmd.AppendEnvs(
-			fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
-			fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
-		)
-
+		workflowCmd :=
+			commandFactory.Create(
+				"bitrise",
+				[]string{"run", wf, "--config", configPath},
+				&command.Opts{
+					Dir: config.WorkDir,
+					Env: []string{
+						fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
+						fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation)},
+					Stdout: os.Stdout,
+					Stderr: os.Stderr,
+				})
 		fmt.Println()
 		log.Donef("$ %s", workflowCmd.PrintableCommandArgs())
 		if err := workflowCmd.Run(); err != nil {

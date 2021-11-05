@@ -2,21 +2,29 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
-
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/errorutil"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
+	"github.com/segmentio/analytics-go"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
+const unifiedCiAppID = "48fa8fbee698622c"
+
 const (
-	generatedE2EWorkflowName  = "e2e_test_executor_workflow"
 	defaultBitriseSecretsName = ".bitrise.secrets.yml"
 )
 
-func runE2E(workDir string) error {
+type partialBitriseModel struct {
+	Workflows yaml.MapSlice `json:"workflows,omitempty" yaml:"workflows,omitempty"`
+}
+
+func runE2E(commandFactory command.Factory, workDir string, segmentKey string, parentURL string) error {
 	e2eBitriseYMLPath := filepath.Join(workDir, "e2e", "bitrise.yml")
 	if exists, err := pathutil.IsPathExists(e2eBitriseYMLPath); err != nil {
 		return err
@@ -37,26 +45,90 @@ func runE2E(workDir string) error {
 		log.Infof("Using secrets from: %s", secrets)
 	}
 
-	tempDir, err := ioutil.TempDir("", "")
+	workflows, err := readE2EWorkflows(e2eBitriseYMLPath)
 	if err != nil {
-		return fmt.Errorf("failed to create temporary directory: %v", err)
-	}
-
-	targetConfig := filepath.Join(tempDir, "bitrise_e2e.yml")
-
-	if err := generateE2EWorkflow(e2eBitriseYMLPath, targetConfig); err != nil {
 		return err
 	}
 
-	e2eCmdArgs := []string{"run", "--config", targetConfig}
-	if secrets != "" {
-		e2eCmdArgs = append(e2eCmdArgs, "--inventory", secrets)
+	client := analytics.New(segmentKey)
+	defer client.Close()
+	for _, workflow := range workflows {
+		err = runE2EWorkflow(commandFactory, workDir, e2eBitriseYMLPath, secrets, workflow)
+		if parentURL != "" {
+			if err := sendAnalytics(client, workflow, err == nil, parentURL); err != nil {
+				return err
+			}
+		}
+		if err != nil {
+			return fmt.Errorf("failed to run workflow %s: %w", workflow, err)
+		}
 	}
-	e2eCmdArgs = append(e2eCmdArgs, generatedE2EWorkflowName)
+	return nil
+}
 
-	e2eCmd := command.NewWithStandardOuts("bitrise", e2eCmdArgs...)
-	e2eCmd.SetDir(workDir)
+func sendAnalytics(client analytics.Client, workflow string, success bool, parentURL string) error {
+	var status string
+	if success {
+		status = "success"
+	} else {
+		status = "error"
+	}
+	if err := client.Enqueue(analytics.Track{
+		UserId: unifiedCiAppID,
+		Event:  "ci_finished",
+		Properties: map[string]interface{}{
+			"workflow":   workflow,
+			"status":     status,
+			"parent_url": parentURL,
+			"stack_id":   os.Getenv("BITRISEIO_STACK_ID"),
+		},
+	}); err != nil {
+		return err
+	}
+	return nil
+}
 
+func readE2EWorkflows(configPath string) ([]string, error) {
+	configBytes, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+	return readE2EWorkflowsFromBytes(configBytes)
+}
+
+func readE2EWorkflowsFromBytes(configBytes []byte) ([]string, error) {
+	model := partialBitriseModel{}
+	if err := yaml.Unmarshal(configBytes, &model); err != nil {
+		return nil, err
+	}
+	var result []string
+	for _, workflow := range model.Workflows {
+		key, ok := workflow.Key.(string)
+		if !ok {
+			return nil, fmt.Errorf("failed to cast workflow name to string")
+		}
+		if strings.HasPrefix(key, "test_") {
+			result = append(result, key)
+		}
+	}
+	return result, nil
+}
+
+func runE2EWorkflow(commandFactory command.Factory, workDir string, configPath string, secretsPath string, workflow string) error {
+	e2eCmdArgs := []string{"run", "--config", configPath}
+	if secretsPath != "" {
+		e2eCmdArgs = append(e2eCmdArgs, "--inventory", secretsPath)
+	}
+	e2eCmdArgs = append(e2eCmdArgs, workflow)
+
+	e2eCmd := commandFactory.Create(
+		"bitrise",
+		e2eCmdArgs,
+		&command.Opts{
+			Dir:    workDir,
+			Stdin:  os.Stdin,
+			Stdout: os.Stdout,
+		})
 	fmt.Println()
 	log.Donef("$ %s", e2eCmd.PrintableCommandArgs())
 
@@ -67,26 +139,6 @@ func runE2E(workDir string) error {
 
 		return fmt.Errorf("failed to run command: %v", err)
 	}
-
-	return nil
-}
-
-func generateE2EWorkflow(sourceConfig, targetConfig string) error {
-	bitriseConfig, warnings, err := parseBitriseConfigFromFile(sourceConfig)
-	if err != nil {
-		return fmt.Errorf("failed to parse e2e test config (%s): %v", sourceConfig, err)
-	}
-
-	for _, warning := range warnings {
-		log.Warnf(warning)
-	}
-
-	appendE2EExecutorWorkflow(&bitriseConfig, targetConfig)
-
-	if err = writeOutBitriseConfig(targetConfig, bitriseConfig); err != nil {
-		return fmt.Errorf("failed to write e2e test workflow to path (%s): %v", targetConfig, err)
-	}
-
 	return nil
 }
 
