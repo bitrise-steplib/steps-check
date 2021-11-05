@@ -72,7 +72,7 @@ type Config struct {
 	WorkDir               string   `env:"step_dir,dir"`
 	Workflow              []string `env:"workflow,multiline"`
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
-	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY, required"`
+	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY,required"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 }
 
