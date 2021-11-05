@@ -43,6 +43,20 @@ workflows:
             pwd
 
             stepman audit --step-yml ./step.yml
+    - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@step-init:
+        title: Validate JSON schema
+        inputs:
+        - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/steplib-review-rules/step.schema.json
+        - yaml_path: ./step.yml
+        - warning_patterns: |-
+            I\[#\] S\[#/additionalProperties\] additionalProperties .+ not allowed
+            I\[#\] S\[#/required\] missing properties: .+
+            I\[#/summary\] S\[#/properties/summary/pattern\] does not match pattern "\^\.\{1,100\}\$"
+            I\[#/deps/(brew|apt_get)+/\d+/(name|bin_name)+\] S\[#/definitions/(BrewDepModel|AptGetDepModel)+/properties/(name|bin_name)+/not\] not failed
+            I\[#/(inputs|outputs)+/\d+/opts\] S\[#/definitions/EnvVarOpts/required\] missing properties: "summary"
+            I\[#/(inputs|outputs)+/\d+/opts/summary\] S\[#/definitions/EnvVarOpts/properties/summary/minLength\] length must be >= 1, but got 0
+            I\[#/inputs/\d+/.+\] S\[#/definitions/InputEnvVar/additionalProperties/type\] expected .+, but got .+
+            I\[#/inputs/\d+/opts/value_options\] S\[#/definitions/EnvVarOpts/properties/value_options/minItems\] minimum 2 items allowed, but found \d+ items
     - script@1:
         title: Run golangci-lint
         inputs:
