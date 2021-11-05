@@ -75,7 +75,7 @@ func sendAnalytics(client analytics.Client, workflow string, success bool, paren
 	}
 	if err := client.Enqueue(analytics.Track{
 		UserId: unifiedCiAppID,
-		Event:  "ci_finished",
+		Event:  "ci_e2e_finished",
 		Properties: map[string]interface{}{
 			"workflow":   workflow,
 			"status":     status,
