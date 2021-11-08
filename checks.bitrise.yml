@@ -25,7 +25,7 @@ workflows:
             pwd
 
             stepman audit --step-yml ./step.yml
-    - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@step-init:
+    - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
         inputs:
         - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/steplib-review-rules/step.schema.json
