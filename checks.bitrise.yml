@@ -28,7 +28,7 @@ workflows:
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
         inputs:
-        - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/steplib-review-rules/step.schema.json
+        - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/main/step.schema.json
         - yaml_path: ./step.yml
         - warning_patterns: |-
             I\[#\] S\[#/additionalProperties\] additionalProperties .+ not allowed
