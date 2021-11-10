@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 const unifiedCiAppID = "48fa8fbee698622c"
@@ -50,12 +51,19 @@ func runE2E(commandFactory command.Factory, workDir string, segmentKey string, p
 		return err
 	}
 
-	client := analytics.New(segmentKey)
-	defer client.Close()
+	shouldSendAnalytics := parentURL != "" && segmentKey != ""
+	var client analytics.Client
+	if shouldSendAnalytics {
+		client = analytics.New(segmentKey)
+		defer client.Close()
+	}
 	for _, workflow := range workflows {
+		start := time.Now()
 		err = runE2EWorkflow(commandFactory, workDir, e2eBitriseYMLPath, secrets, workflow)
-		if parentURL != "" {
-			if err := sendAnalytics(client, workflow, err == nil, parentURL); err != nil {
+		elapsed := time.Since(start).Milliseconds()
+
+		if shouldSendAnalytics {
+			if err := sendAnalytics(client, workflow, err == nil, parentURL, elapsed); err != nil {
 				return err
 			}
 		}
@@ -66,7 +74,7 @@ func runE2E(commandFactory command.Factory, workDir string, segmentKey string, p
 	return nil
 }
 
-func sendAnalytics(client analytics.Client, workflow string, success bool, parentURL string) error {
+func sendAnalytics(client analytics.Client, workflow string, success bool, parentURL string, duration int64) error {
 	var status string
 	if success {
 		status = "success"
@@ -81,6 +89,7 @@ func sendAnalytics(client analytics.Client, workflow string, success bool, paren
 			"status":     status,
 			"parent_url": parentURL,
 			"stack_id":   os.Getenv("BITRISEIO_STACK_ID"),
+			"duration":   duration,
 		},
 	}); err != nil {
 		return err
