@@ -10,8 +10,7 @@ rules:
   document-start: disable
   indentation:
     indent-sequences: false
-  comments-indentation:
-    level: error
+  comments-indentation: disable
   comments:
     level: error
   octal-values: enable
