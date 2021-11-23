@@ -1,6 +1,7 @@
 extends: default
 
 ignore: |
+  .bitrise.secrets.yml
   vendor/
   .github/
   _tmp/
