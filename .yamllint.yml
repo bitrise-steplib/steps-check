@@ -7,6 +7,7 @@ ignore: |
   _tmp/
 
 rules:
+  empty-lines: {max: 1}
   line-length: disable
   document-start: disable
   indentation:
