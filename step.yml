@@ -5,31 +5,31 @@ summary: |
 description: |
   Runs step linters
 type_tags:
-  - test
+- test
 is_always_run: false
 is_skippable: false
 
-website: "https://github.com/bitrise-steplib/steps-check.git"
+website: https://github.com/bitrise-steplib/steps-check.git
 
 toolkit:
   go:
     package_name: github.com/bitrise-steplib/steps-check
 
 inputs:
-  - step_dir: .
-    opts:
-      title: "Step directory"
-      is_expand: true
-      is_required: true
-  - workflow: |-
-      lint
-      unit_test
-    opts:
-      title: "Step check workflow"
-      is_required: true
-  - skip_step_yml_validation: "no"
-    opts:
-      title: "Skip step.yml validation"
-      value_options:
-      - "yes"
-      - "no"
+- step_dir: .
+  opts:
+    title: Step directory
+    is_expand: true
+    is_required: true
+- workflow: |-
+    lint
+    unit_test
+  opts:
+    title: Step check workflow
+    is_required: true
+- skip_step_yml_validation: false
+  opts:
+    title: Skip step.yml validation
+    value_options:
+    - "yes"
+    - "no"
