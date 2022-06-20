@@ -17,7 +17,7 @@ workflows:
             yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         title: Audit step
-        run_if: '{{enveq "SKIP_STEP_YML_VALIDATION" "false"}}'
+        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
         inputs:
         - content: |-
             #!/bin/env bash
@@ -53,5 +53,5 @@ workflows:
     - change-workdir@1:
         inputs:
         - path: $STEP_DIR
-    - go-list: {}
-    - go-test: {}
+    - go-list: { }
+    - go-test: { }
