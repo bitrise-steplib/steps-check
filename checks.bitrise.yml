@@ -27,6 +27,7 @@ workflows:
             stepman audit --step-yml ./step.yml
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
+        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
         inputs:
         - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/main/step.schema.json
         - yaml_path: ./step.yml
