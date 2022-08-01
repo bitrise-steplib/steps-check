@@ -27,6 +27,7 @@ workflows:
             stepman audit --step-yml ./step.yml
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
+        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
         inputs:
         - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/main/step.schema.json
         - yaml_path: ./step.yml
@@ -45,7 +46,7 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -xeo pipefail
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.47.1
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.47.3
             golangci-lint run --timeout 5m
 
   unit_test:
