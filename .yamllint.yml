@@ -11,7 +11,7 @@ ignore: |
   _lessons/
 
 rules:
-  empty-lines: { max: 1 }
+  empty-lines: disable
   line-length: disable
   document-start: disable
   indentation:
@@ -26,3 +26,5 @@ rules:
   braces:
     min-spaces-inside: 1
     max-spaces-inside: 1
+  trailing-spaces: disable
+  new-line-at-end-of-file: disable
