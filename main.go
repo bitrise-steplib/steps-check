@@ -2,14 +2,16 @@ package main
 
 import (
 	_ "embed"
+	"errors"
 	"fmt"
-	"github.com/bitrise-io/go-utils/env"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/command"
+	"github.com/bitrise-io/go-utils/env"
 	"github.com/bitrise-io/go-utils/errorutil"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
@@ -69,7 +71,7 @@ func mainR() error {
 	if runE2EWorkflow {
 		log.Donef("Running '%s' workflow", e2eWorkflow)
 		if err := runE2E(commandFactory, config.WorkDir, config.SegmentWriteKey, config.ParentBuildURL); err != nil {
-			return fmt.Errorf("workflow %s failed: %v", e2eWorkflow, err)
+			return fmt.Errorf("workflow %s failed: %w", e2eWorkflow, err)
 		}
 
 		log.Donef("Check '%s' succeeded", e2eWorkflow)
@@ -111,7 +113,7 @@ func mainR() error {
 		log.Donef("$ %s", workflowCmd.PrintableCommandArgs())
 		if err := workflowCmd.Run(); err != nil {
 			if errorutil.IsExitStatusError(err) {
-				return fmt.Errorf("workflow %s failed: %v", wf, err)
+				return fmt.Errorf("workflow %s failed: %w", wf, err)
 			}
 			return fmt.Errorf("failed to run command: %v", err)
 		}
@@ -125,6 +127,12 @@ func mainR() error {
 func main() {
 	if err := mainR(); err != nil {
 		log.Errorf("%s", err)
+
+		var exitErr *exec.ExitError
+		if ok := errors.As(err, &exitErr); ok {
+			os.Exit(exitErr.ExitCode())
+		}
+
 		os.Exit(1)
 	}
 }
