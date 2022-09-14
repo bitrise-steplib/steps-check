@@ -46,13 +46,14 @@ workflows:
             I\[#/inputs/\d+/opts/value_options\] S\[#/definitions/EnvVarOpts/properties/value_options/minItems\] minimum 2 items allowed, but found \d+ items
     - script@1:
         title: Run golangci-lint
+        is_always_run: true
         inputs:
         - content: |-
             #!/bin/env bash
             set -xeo pipefail
             export GOROOT=$(go env GOROOT)
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.47.3
-            golangci-lint run --timeout 5m
+            golangci-lint run --timeout 5m --color always
 
   unit_test:
     steps:
