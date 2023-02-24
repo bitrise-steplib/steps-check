@@ -35,6 +35,7 @@ type Config struct {
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 	IsCI                  bool     `env:"CI"`
+	IsPR                  bool     `env:"PR"`
 }
 
 func mainR() error {
@@ -71,7 +72,7 @@ func mainR() error {
 
 	if runE2EWorkflow {
 		log.Donef("Running '%s' workflow", e2eWorkflow)
-		shouldFailOnFirstError := !config.IsCI
+		shouldFailOnFirstError := !config.IsCI || config.IsPR
 		if err := runE2E(commandFactory, config.WorkDir, shouldFailOnFirstError, config.SegmentWriteKey, config.ParentBuildURL); err != nil {
 			return fmt.Errorf("workflow %s failed: %w", e2eWorkflow, err)
 		}
