@@ -2,17 +2,19 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/errorutil"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/segmentio/analytics-go"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 const unifiedCiAppID = "48fa8fbee698622c"
@@ -25,7 +27,7 @@ type partialBitriseModel struct {
 	Workflows yaml.MapSlice `json:"workflows,omitempty" yaml:"workflows,omitempty"`
 }
 
-func runE2E(commandFactory command.Factory, workDir string, segmentKey string, parentURL string) error {
+func runE2E(commandFactory command.Factory, workDir string, shouldFailOnFirstError bool, segmentKey string, parentURL string) error {
 	e2eBitriseYMLPath := filepath.Join(workDir, "e2e", "bitrise.yml")
 	if exists, err := pathutil.IsPathExists(e2eBitriseYMLPath); err != nil {
 		return err
@@ -57,6 +59,9 @@ func runE2E(commandFactory command.Factory, workDir string, segmentKey string, p
 		client = analytics.New(segmentKey)
 		defer client.Close()
 	}
+
+	var result string
+	success := true
 	for _, workflow := range workflows {
 		start := time.Now()
 		err = runE2EWorkflow(commandFactory, workDir, e2eBitriseYMLPath, secrets, workflow)
@@ -67,10 +72,27 @@ func runE2E(commandFactory command.Factory, workDir string, segmentKey string, p
 				return err
 			}
 		}
+
 		if err != nil {
-			return fmt.Errorf("failed to run workflow %s: %w", workflow, err)
+			if shouldFailOnFirstError {
+				return fmt.Errorf("'%s' E2E test failed: %w", workflow, err)
+			}
+
+			success = false
+			result += fmt.Sprintf("- %s (FAIL): %s \n", colorstring.Red(workflow), err)
+
+			continue
 		}
+
+		result += fmt.Sprintf("- %s (OK) \n", colorstring.Green(workflow))
 	}
+
+	log.Infof("Step E2E summary:")
+	log.Printf("%s", result)
+	if !success {
+		return fmt.Errorf("E2E tests failed")
+	}
+
 	return nil
 }
 
