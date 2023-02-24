@@ -20,3 +20,9 @@ workflows:
         title: Run current Step
         inputs:
         - step_dir: $ORIG_WORKING_DIR
+
+  test_success:
+    steps:
+    - script:
+        inputs:
+        - content: exit 0

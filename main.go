@@ -34,6 +34,7 @@ type Config struct {
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
+	IsCI                  bool     `env:"CI"`
 }
 
 func mainR() error {
@@ -70,7 +71,8 @@ func mainR() error {
 
 	if runE2EWorkflow {
 		log.Donef("Running '%s' workflow", e2eWorkflow)
-		if err := runE2E(commandFactory, config.WorkDir, config.SegmentWriteKey, config.ParentBuildURL); err != nil {
+		shouldFailOnFirstError := !config.IsCI
+		if err := runE2E(commandFactory, config.WorkDir, shouldFailOnFirstError, config.SegmentWriteKey, config.ParentBuildURL); err != nil {
 			return fmt.Errorf("workflow %s failed: %w", e2eWorkflow, err)
 		}
 
