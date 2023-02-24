@@ -79,12 +79,12 @@ func runE2E(commandFactory command.Factory, workDir string, shouldFailOnFirstErr
 			}
 
 			success = false
-			result += fmt.Sprintf("- %s: %s \n", colorstring.Red(workflow), err)
+			result += fmt.Sprintf("- %s (FAIL): %s \n", colorstring.Red(workflow), err)
 
 			continue
 		}
 
-		result += fmt.Sprintf("- %s \n", colorstring.Green(workflow))
+		result += fmt.Sprintf("- %s (OK) \n", colorstring.Green(workflow))
 	}
 
 	log.Infof("Step E2E summary:")
