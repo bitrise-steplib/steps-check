@@ -52,7 +52,7 @@ workflows:
             #!/bin/env bash
             set -xeo pipefail
             export GOROOT=$(go env GOROOT)
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.47.3
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
             golangci-lint run --timeout 5m --color always
 
   unit_test:
