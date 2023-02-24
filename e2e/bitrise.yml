@@ -2,12 +2,6 @@ format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
-  test_fail:
-    steps:
-    - script:
-        inputs:
-        - content: exit 1
-
   test_smoke_self_test:
     envs:
     - ORIG_WORKING_DIR: $BITRISE_SOURCE_DIR
