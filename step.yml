@@ -33,3 +33,9 @@ inputs:
     value_options:
     - "yes"
     - "no"
+- skip_go_checks: "no"
+  opts:
+    title: Skip golang related checks
+    value_options:
+    - "yes"
+    - "no"
