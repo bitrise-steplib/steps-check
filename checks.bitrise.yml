@@ -46,6 +46,7 @@ workflows:
             I\[#/inputs/\d+/opts/value_options\] S\[#/definitions/EnvVarOpts/properties/value_options/minItems\] minimum 2 items allowed, but found \d+ items
     - script@1:
         title: Run golangci-lint
+        run_if: "{{enveq \"SKIP_GO_CHECKS\" \"false\"}}"
         is_always_run: true
         inputs:
         - content: |-
