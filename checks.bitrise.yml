@@ -18,6 +18,10 @@ workflows:
                 sudo apt-get remove yamllint -y
             fi
             pip3 install yamllint
+            if asdf plugin list | grep -q "python"; then
+                # Installing a new binary to $PATH requires a reshim
+                asdf reshim python
+            fi
             yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         title: Audit step
@@ -54,6 +58,12 @@ workflows:
             set -xeo pipefail
             export GOROOT=$(go env GOROOT)
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
+
+            if asdf plugin list | grep -q "golang"; then
+                # Installing a new binary to $PATH requires a reshim
+                asdf reshim golang
+            fi
+
             golangci-lint run --timeout 5m --color always
 
   unit_test:
