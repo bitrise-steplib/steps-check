@@ -58,6 +58,12 @@ workflows:
             set -xeo pipefail
             export GOROOT=$(go env GOROOT)
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
+
+            if asdf plugin list | grep -q "golang"; then
+                # Installing a new binary to $PATH requires a reshim
+                asdf reshim golang
+            fi
+
             golangci-lint run --timeout 5m --color always
 
   unit_test:
