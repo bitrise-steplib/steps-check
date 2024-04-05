@@ -13,15 +13,11 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            # Remove old yamllint apt package
-            if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                sudo apt-get remove yamllint -y
-            fi
-            pip3 install yamllint
-            if asdf plugin list | grep -q "python"; then
-                # Installing a new binary to $PATH requires a reshim
-                asdf reshim python
-            fi
+            
+            pip install --user pipx
+            pipx ensurepath
+            pipx install yamllint
+
             yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         title: Audit step
