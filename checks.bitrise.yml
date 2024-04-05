@@ -15,16 +15,17 @@ workflows:
             set -ex
             
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                # pipx is only available in OS repos from Ubuntu 23+
+                # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
                 pip install --user --break-system-packages pipx
+                pipx ensurepath
+                source ~/.bashrc # reload $PATH changes
             else
                 brew install pipx
+                pipx ensurepath
+                source ~/.zshrc # reload $PATH changes
             fi
 
-            pipx ensurepath
-            exec $SHELL # reload changed $PATH
             pipx install yamllint
-
             yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         title: Audit step
