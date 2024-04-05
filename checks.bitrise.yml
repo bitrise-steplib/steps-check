@@ -25,6 +25,7 @@ workflows:
                 else
                     pip install --user --break-system-packages pipx
                 fi
+                export PATH="$PATH:/root/.local/bin"
                 pipx ensurepath
                 source ~/.bashrc # reload $PATH changes
             else
