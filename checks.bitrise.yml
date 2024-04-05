@@ -16,9 +16,14 @@ workflows:
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
-                # Also, the Ubuntu 20 stack has a system-wide pip installation with an ancient version and it
-                # doesn't understand the `--break-system-packages` flag
-                pip install pipx || pip install --user --break-system-packages pipx
+                ubuntu_version=$(lsb_release -rs)
+                if [[ $ubuntu_version == "20.04" ]]; then
+                    # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
+                    apt-get update && apt-get install python3.8-venv
+                    # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
+                    pip install pipx
+                else
+                    pip install --user --break-system-packages pipx
                 pipx ensurepath
                 source ~/.bashrc # reload $PATH changes
             else
