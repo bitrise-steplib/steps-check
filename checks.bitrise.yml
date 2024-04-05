@@ -13,15 +13,29 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            # Remove old yamllint apt package
+
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                sudo apt-get remove yamllint -y
+                # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
+                ubuntu_version=$(lsb_release -rs)
+                if [[ $ubuntu_version == "20.04" ]]; then
+                    apt-get remove -y yamllint
+                    # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
+                    apt-get update && apt-get install python3.8-venv
+                    # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
+                    pip install pipx
+                else
+                    pip install --user --break-system-packages pipx
+                fi
+                export PATH="$PATH:/root/.local/bin"
+                pipx ensurepath
+                source ~/.bashrc # reload $PATH changes
+            else
+                HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pipx
+                pipx ensurepath
+                source ~/.zshrc # reload $PATH changes
             fi
-            pip3 install yamllint
-            if asdf plugin list | grep -q "python"; then
-                # Installing a new binary to $PATH requires a reshim
-                asdf reshim python
-            fi
+
+            pipx install yamllint
             yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
         title: Audit step
