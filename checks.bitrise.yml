@@ -24,6 +24,7 @@ workflows:
                     pip install pipx
                 else
                     pip install --user --break-system-packages pipx
+                fi
                 pipx ensurepath
                 source ~/.bashrc # reload $PATH changes
             else
