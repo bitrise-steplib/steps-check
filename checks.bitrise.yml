@@ -18,6 +18,7 @@ workflows:
                 # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
                 ubuntu_version=$(lsb_release -rs)
                 if [[ $ubuntu_version == "20.04" ]]; then
+                    apt-get remove -y yamllint
                     # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
                     apt-get update && apt-get install python3.8-venv
                     # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
