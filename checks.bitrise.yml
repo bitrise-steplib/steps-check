@@ -16,7 +16,9 @@ workflows:
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
-                pip install --user --break-system-packages pipx
+                # Also, the Ubuntu 20 stack has a system-wide pip installation with an ancient version and it
+                # doesn't understand the `--break-system-packages` flag
+                pip install pipx || pip install --user --break-system-packages pipx
                 pipx ensurepath
                 source ~/.bashrc # reload $PATH changes
             else
