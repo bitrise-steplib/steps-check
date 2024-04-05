@@ -14,7 +14,7 @@ workflows:
             #!/bin/env bash
             set -ex
             
-            pip install --user pipx
+            pip3 install --user pipx
             pipx ensurepath
             pipx install yamllint
 
