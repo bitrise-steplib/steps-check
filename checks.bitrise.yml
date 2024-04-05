@@ -20,7 +20,7 @@ workflows:
                 pipx ensurepath
                 source ~/.bashrc # reload $PATH changes
             else
-                brew install pipx
+                HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pipx
                 pipx ensurepath
                 source ~/.zshrc # reload $PATH changes
             fi
