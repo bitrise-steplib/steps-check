@@ -13,7 +13,7 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            
+
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
                 # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
                 pip install --user --break-system-packages pipx
