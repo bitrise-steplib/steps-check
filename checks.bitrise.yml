@@ -31,8 +31,9 @@ workflows:
                 source ~/.bashrc # reload $PATH changes
             else
                 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pipx
+                export PATH="$PATH:$HOME/.local/bin"
                 pipx ensurepath
-                source ~/.zshrc # reload $PATH changes
+                source ~/.bashrc # reload $PATH changes
             fi
 
             pipx install yamllint
