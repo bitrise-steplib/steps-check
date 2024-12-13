@@ -20,7 +20,8 @@ workflows:
                 if [[ $ubuntu_version == "20.04" ]]; then
                     apt-get remove -y yamllint
                     # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
-                    apt-get update && apt-get install python3.8-venv
+                    apt-get update
+                    yes | apt-get install python3.8-venv
                     # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
                     pip install pipx
                 else
@@ -72,7 +73,7 @@ workflows:
             #!/bin/env bash
             set -xeo pipefail
             export GOROOT=$(go env GOROOT)
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.62.2
 
             if asdf plugin list | grep -q "golang"; then
                 # Installing a new binary to $PATH requires a reshim
