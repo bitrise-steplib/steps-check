@@ -105,8 +105,13 @@ workflows:
             #!/bin/bash
             set -e
 
-            sudo apt update
-            sudo apt install ripgrep -y
+            # install ripgrep either for mac or linux
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+               brew install ripgrep
+            else
+               sudo apt update
+              sudo apt install ripgrep -y
+            fi
 
             # Parse repository name from repo URL (works for SSH & HTTPS)
             REPO_URL="${GIT_REPOSITORY_URL}"
@@ -130,8 +135,13 @@ workflows:
             git checkout "$BITRISE_GIT_BRANCH"
 
             # Download and install bitcode
-            curl -L https://storage.googleapis.com/bitrise-bitcode/bitcode-linux-amd64.tar.gz -o /tmp/bitcode-linux-amd64.tar.gz
-            sudo tar -xzf /tmp/bitcode-linux-amd64.tar.gz -C /usr/local/bin/
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                curl -L https://storage.googleapis.com/bitrise-bitcode/bitcode-darwin-arm64.tar.gz -o /tmp/bitcode.tar.gz
+            else
+                curl -L https://storage.googleapis.com/bitrise-bitcode/bitcode-linux-amd64.tar.gz -o /tmp/bitcode.tar.gz
+            fi
+
+            sudo tar -xzf /tmp/bitcode.tar.gz -C /usr/local/bin/
             sudo chmod +x /usr/local/bin/bitcode
 
             # 6. Run your AI reviewer (customize flags as needed)
