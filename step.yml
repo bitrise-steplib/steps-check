@@ -24,6 +24,7 @@ inputs:
 - workflow: |-
     lint
     unit_test
+    ai_pr_summary
   opts:
     title: Step check workflow
     is_required: true
