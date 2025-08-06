@@ -114,7 +114,7 @@ workflows:
             fi
 
             # Hardwire the steps-check repository because it is being run by the tooling controller so the env $GIT_REPOSITORY_URL would be different
-            REPO_URL="https://github.com/bitrise-steplib/steps-check.git" 
+            REPO_URL="https://github.com/bitrise-steplib/steps-check.git"
             REPO=$(echo "$REPO_URL" | sed -E 's#(git@|https://)([^/:]+)[/:]([^/]+)/([^.]+)(\.git)?#\3/\4#')
 
             # 1. Unshallow the repo if it's a shallow clone (safe to run even if already full)
