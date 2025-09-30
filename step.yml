@@ -31,8 +31,8 @@ inputs:
     is_required: true
 - skip_step_yml_validation: "no"
   opts:
-    title: Skip step.yml validation
-    description: Skip step.yml validation
+    title: Skip step.yml and README validation
+    description: Skip step.yml and README validation
     value_options:
     - "yes"
     - "no"
