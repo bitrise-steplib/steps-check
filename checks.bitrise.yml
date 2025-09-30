@@ -49,6 +49,28 @@ workflows:
             pwd
 
             stepman audit --step-yml ./step.yml
+    - script@1:
+        title: Check README.md is consistent with step.yml
+        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -x
+            if [ ! -f ./README.md ]; then
+              echo "No README.md file found, please add 'generate_readme' workflow, run it and commit the changes"
+              exit 1
+            fi
+
+            bitrise run generate_readme
+            if [ $? -ne 0 ]; then
+              echo "Failed to generate README.md, please check that 'generate_readme' workflow exists"
+              exit 1
+            fi
+
+            if ! diff -u README.md README.md.backup; then
+              echo "README.md is not consistent with step.yml, please run 'bitrise run generate_readme' and commit the changes"
+              exit 1
+            fi
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
         run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
