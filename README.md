@@ -27,7 +27,7 @@ You can also run this step directly with [Bitrise CLI](https://github.com/bitris
 | --- | --- | --- | --- |
 | `step_dir` | Step directory path | required | `.` |
 | `workflow` | Select the validation workflow to run | required | `lint unit_test` |
-| `skip_step_yml_validation` | Skip step.yml validation |  | `no` |
+| `skip_step_yml_validation` | Skip step.yml and README validation |  | `no` |
 | `skip_go_checks` | Skip golang related checks |  | `no` |
 </details>
 
