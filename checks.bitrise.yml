@@ -55,7 +55,7 @@ workflows:
         inputs:
         - content: |-
             #!/bin/env bash
-            set -ex
+            set -x
             if [ ! -f ./README.md ]; then
               echo "No README.md file found, please add 'generate_readme' workflow, run it and commit the changes"
               exit 1
