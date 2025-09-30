@@ -18,24 +18,28 @@ toolkit:
 inputs:
 - step_dir: .
   opts:
-    title: Step directory
+    title: Step directory path
+    description: Step directory path
     is_expand: true
     is_required: true
 - workflow: |-
     lint
     unit_test
   opts:
-    title: Step check workflow
+    title: Validation workflow
+    description: Select the validation workflow to run
     is_required: true
 - skip_step_yml_validation: "no"
   opts:
     title: Skip step.yml validation
+    description: Skip step.yml validation
     value_options:
     - "yes"
     - "no"
 - skip_go_checks: "no"
   opts:
     title: Skip golang related checks
+    description: Skip golang related checks
     value_options:
     - "yes"
     - "no"
