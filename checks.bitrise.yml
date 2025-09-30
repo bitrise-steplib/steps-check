@@ -57,12 +57,16 @@ workflows:
             #!/bin/env bash
             set -ex
             if [ ! -f ./README.md ]; then
-              echo "No README.md file found, please run 'bitrise run generate_readme' and commit the changes"
+              echo "No README.md file found, please add 'generate_readme' workflow, run it and commit the changes"
               exit 1
             fi
 
             bitrise run generate_readme
-            
+            if [ $? -ne 0 ]; then
+              echo "Failed to generate README.md, please check that 'generate_readme' workflow exists"
+              exit 1
+            fi
+
             if ! diff -u README.md README.md.backup; then
               echo "README.md is not consistent with step.yml, please run 'bitrise run generate_readme' and commit the changes"
               exit 1
