@@ -3,6 +3,8 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
   lint:
+    envs:
+    - CI: "true"
     steps:
     - change-workdir@1:
         inputs:
@@ -15,26 +17,31 @@ workflows:
             set -ex
 
             if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-                # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
-                ubuntu_version=$(lsb_release -rs)
-                if [[ $ubuntu_version == "20.04" ]]; then
-                    apt-get remove -y yamllint
-                    # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
-                    apt-get update
-                    yes | apt-get install python3.8-venv
-                    # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
-                    pip install pipx
-                else
-                    pip install --user --break-system-packages pipx
-                fi
-                export PATH="$PATH:/root/.local/bin"
-                pipx ensurepath
-                source ~/.bashrc # reload $PATH changes
+              # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
+              ubuntu_version=$(lsb_release -rs)
+              if [[ $ubuntu_version == "20.04" ]]; then
+                apt-get remove -y yamllint
+                # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
+                apt-get update
+                yes | apt-get install python3.8-venv
+                # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
+                pip install pipx
+              else
+                pip install --user --break-system-packages pipx
+              fi
+              export PATH="$PATH:/root/.local/bin"
+              pipx ensurepath
+              source ~/.bashrc # reload $PATH changes
             else
+              if brew list pipx &>/dev/null ; then
+                echo "pipx already installed"
+              else
+                echo "Installing pipx"
                 HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pipx
                 export PATH="$PATH:$HOME/.local/bin"
                 pipx ensurepath
                 source ~/.bashrc # reload $PATH changes
+              fi
             fi
 
             pipx install yamllint
@@ -67,9 +74,14 @@ workflows:
               exit 1
             fi
 
-            if ! diff -u README.md README.md.backup; then
-              echo "README.md is not consistent with step.yml, please run 'bitrise run generate_readme' and commit the changes"
-              exit 1
+            diff -u README.md README.md.backup
+            if [ $? -ne 0 ]; then
+              if [ $CI == "true" ]; then
+                echo "README.md is not consistent with step.yml, please run 'bitrise run generate_readme' and commit the changes"
+                exit 1
+              else
+                echo "README.md updated, please commit the changes"
+              fi
             fi
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
