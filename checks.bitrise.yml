@@ -62,23 +62,23 @@ workflows:
             #!/bin/env bash
             set -x
             if [ ! -f ./README.md ]; then
-              echo "No README.md file found, please add 'generate_readme' workflow, run it and commit the changes"
+              echo -e "\033[0;31mNo README.md file found, please add 'generate_readme' workflow, run it and commit the changes.\033[0m"
               exit 1
             fi
 
             bitrise run generate_readme
             if [ $? -ne 0 ]; then
-              echo "Failed to generate README.md, please check that 'generate_readme' workflow exists"
+              echo -e "\033[0;31mFailed to generate README.md, please check that 'generate_readme' workflow exist.\033[0m"
               exit 1
             fi
 
             diff -u README.md README.md.backup
             if [ $? -ne 0 ]; then
-              echo "README.md was not consistent with step.yml, regenerated it"
+              echo -e "\033[0;35mREADME.md was not consistent with step.yml, regenerated it\035[0m"
               if [ $CI == "true" ]; then
-                echo "Please run 'bitrise run generate_readme' locally and commit the changes."
+                echo -e "\033[0;31mPlease run 'bitrise run generate_readme' locally and commit the changes.\033[0m"
               else
-                echo "Please compare README.md and README.md.backup to see diff, and commit README.md."
+                echo -e "\033[0;31mPlease compare README.md and README.md.backup to see diff, and commit README.md.\033[0m"
               fi
               exit 1
             fi
