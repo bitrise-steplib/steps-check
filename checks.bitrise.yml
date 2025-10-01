@@ -74,12 +74,13 @@ workflows:
 
             diff -u README.md README.md.backup
             if [ $? -ne 0 ]; then
+              echo "README.md was not consistent with step.yml, regenerated it"
               if [ $CI == "true" ]; then
-                echo "README.md is not consistent with step.yml, please run 'bitrise run generate_readme' and commit the changes"
-                exit 1
+                echo "Please run 'bitrise run generate_readme' locally and commit the changes."
               else
-                echo "README.md updated, please commit the changes"
+                echo "Please compare README.md and README.md.backup to see diff, and commit README.md."
               fi
+              exit 1
             fi
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
