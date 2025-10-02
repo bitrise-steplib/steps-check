@@ -79,6 +79,11 @@ workflows:
               exit 1
             fi
 
+            if [[ "${CI_RUN}" == "true" ]]; then
+              echo "Running in scheduled batch CI, skipping README.md consistency check"
+              exit 0
+            fi
+
             bitrise run ${generate_readme_wf_name}
             if [[ $? -ne 0 ]]; then
               echo -e "\033[0;31mFailed to generate README.md.\033[0m"
