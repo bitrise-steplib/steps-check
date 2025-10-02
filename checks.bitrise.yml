@@ -61,22 +61,35 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -x
-            if [ ! -f ./README.md ]; then
+            if [[ ! -f ./README.md ]]; then
               echo -e "\033[0;31mNo README.md file found, please add 'generate_readme' workflow, run it and commit the changes.\033[0m"
               exit 1
             fi
 
-            bitrise run generate_readme
-            if [ $? -ne 0 ]; then
-              echo -e "\033[0;31mFailed to generate README.md, please check that 'generate_readme' workflow exist.\033[0m"
+            workflows=$(bitrise workflows)
+            generate_readme_wf_name=""
+            if [[ "${workflows}" == *"generate_readme"* ]]; then
+              echo "'generate_readme' workflow found"
+              generate_readme_wf_name="generate_readme"
+            elif [[ "${workflows}" == *"generate-readme"* ]]; then
+              echo "'generate-readme' workflow found"
+              generate_readme_wf_name="generate-readme"
+            else
+              echo -e "\033[0;31mNo 'generate_readme' or 'generate-readme' workflow found, please add it, run it and commit the changes.\033[0m"
+              exit 1
+            fi
+
+            bitrise run ${generate_readme_wf_name}
+            if [[ $? -ne 0 ]]; then
+              echo -e "\033[0;31mFailed to generate README.md.\033[0m"
               exit 1
             fi
 
             diff -u README.md README.md.backup
-            if [ $? -ne 0 ]; then
-              echo -e "\033[0;35mREADME.md was not consistent with step.yml, regenerated it\035[0m"
-              if [ $CI == "true" ]; then
-                echo -e "\033[0;31mPlease run 'bitrise run generate_readme' locally and commit the changes.\033[0m"
+            if [[ $? -ne 0 ]]; then
+              echo -e "\033[0;35mREADME.md was not consistent with step.yml, regenerated it\033[0m"
+              if [[ $CI == "true" ]]; then
+                echo -e "\033[0;31mPlease run `bitrise run ${generate_readme_wf_name}` locally and commit the changes.\033[0m"
               else
                 echo -e "\033[0;31mPlease compare README.md and README.md.backup to see diff, and commit README.md.\033[0m"
               fi
