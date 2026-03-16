@@ -123,7 +123,7 @@ workflows:
         - content: |-
             #!/bin/env bash
             set -ex
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.64.8
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- $GOLANGCI_LINT_VERSION
             ./bin/golangci-lint run --timeout 5m --color always
 
   unit_test:

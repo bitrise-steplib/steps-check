@@ -33,6 +33,7 @@ type Config struct {
 	Workflow              []string `env:"workflow,multiline"`
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 	SkipGoChecks          bool     `env:"skip_go_checks,opt[yes,no]"`
+	GolangciLintVersion   string   `env:"golangci_lint_version"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 	IsCI                  bool     `env:"CI"`
@@ -111,6 +112,7 @@ func mainR() error {
 						fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
 						fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
 						fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
+						fmt.Sprintf("GOLANGCI_LINT_VERSION=%s", config.GolangciLintVersion),
 					},
 
 					Stdout: os.Stdout,

@@ -20,7 +20,6 @@ inputs:
   opts:
     title: Step directory path
     description: Step directory path
-    is_expand: true
     is_required: true
 - workflow: |-
     lint
@@ -33,6 +32,7 @@ inputs:
   opts:
     title: Skip step.yml and README validation
     description: Skip step.yml and README validation
+    is_required: true
     value_options:
     - "yes"
     - "no"
@@ -40,6 +40,12 @@ inputs:
   opts:
     title: Skip golang related checks
     description: Skip golang related checks
+    is_required: true
     value_options:
     - "yes"
     - "no"
+- golangci_lint_version: "v1.64.8"
+  opts:
+    title: Golangci-lint version
+    description: Golangci-lint version
+    is_required: true
