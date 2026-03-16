@@ -30,10 +30,10 @@ const yamllintEnvKey = "YAMLLINT_CONFIG_FILE"
 // Config ...
 type Config struct {
 	WorkDir               string   `env:"step_dir,dir"`
-	Workflow              []string `env:"workflow,multiline"`
+	Workflow              []string `env:"workflow,multiline,required"`
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 	SkipGoChecks          bool     `env:"skip_go_checks,opt[yes,no]"`
-	GolangciLintVersion   string   `env:"golangci_lint_version"`
+	GolangciLintVersion   string   `env:"golangci_lint_version,required"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 	IsCI                  bool     `env:"CI"`
