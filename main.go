@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -83,18 +82,18 @@ func mainR() error {
 	}
 
 	// Run other, non-e2e workflows
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return err
 	}
 
 	configPath := filepath.Join(tmpDir, "bitrise.yml")
-	if err := ioutil.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
+	if err := os.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
 		return err
 	}
 
 	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
-	if err := ioutil.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
+	if err := os.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
 		return err
 	}
 	if err := os.Setenv(yamllintEnvKey, yamllintPath); err != nil {
