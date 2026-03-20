@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -120,7 +119,7 @@ func sendAnalytics(client analytics.Client, workflow string, success bool, paren
 }
 
 func readE2EWorkflows(configPath string) ([]string, error) {
-	configBytes, err := ioutil.ReadFile(configPath)
+	configBytes, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}

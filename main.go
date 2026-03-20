@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,6 +32,7 @@ type Config struct {
 	Workflow              []string `env:"workflow,multiline"`
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 	SkipGoChecks          bool     `env:"skip_go_checks,opt[yes,no]"`
+	GolangciLintVersion   string   `env:"golangci_lint_version,required"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 	IsCI                  bool     `env:"CI"`
@@ -82,18 +82,18 @@ func mainR() error {
 	}
 
 	// Run other, non-e2e workflows
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return err
 	}
 
 	configPath := filepath.Join(tmpDir, "bitrise.yml")
-	if err := ioutil.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
+	if err := os.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
 		return err
 	}
 
 	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
-	if err := ioutil.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
+	if err := os.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
 		return err
 	}
 	if err := os.Setenv(yamllintEnvKey, yamllintPath); err != nil {
@@ -111,6 +111,7 @@ func mainR() error {
 						fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
 						fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
 						fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
+						fmt.Sprintf("GOLANGCI_LINT_VERSION=%s", config.GolangciLintVersion),
 					},
 
 					Stdout: os.Stdout,
