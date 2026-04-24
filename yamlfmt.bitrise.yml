@@ -1,11 +1,10 @@
-# TODO: this import causes an error when this file itself is imported by another step repo.
 include:
 - path: ./common.bitrise.yml
 
 step_bundles:
   yamlfmt:
     steps:
-    # Work around the limitation that included bitrise.ymls can't access other files
+    # Work around the limitation that included bitrise.ymls can't access other files from the repo (only bitrise.ymls can be included)
     - bundle::download-file:
         title: Download ymlfmt config
         inputs:

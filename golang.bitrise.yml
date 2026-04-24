@@ -1,7 +1,6 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
-# TODO: this import causes an error when this file itself is imported by another step repo.
 include:
 - path: ./common.bitrise.yml
 
@@ -15,7 +14,7 @@ step_bundles:
         inputs:
         - url: https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
         - output_env_var: GOLANGCI_LINT_INSTALL_SCRIPT
-    # Work around the limitation that included can't access files (only bitrise.ymls can be included)
+    # Work around the limitation that included workflows can't access files from the repo (only bitrise.ymls can be included)
     - bundle::download-file:
         title: Download golangci-lint config file
         inputs:
@@ -50,12 +49,3 @@ step_bundles:
 
             # TODO: gotestfmt
             go test -v ./...
-
-workflows:
-  check3:
-    steps:
-      - bundle::golangci-lint:
-          inputs:
-          - golangci_lint_version: 1.64.8
-      - bundle::go-test: {}
-

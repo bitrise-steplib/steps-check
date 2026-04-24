@@ -1,0 +1,15 @@
+include:
+- path: ./yamlfmt.bitrise.yml
+- path: ./step-metadata.bitrise.yml
+- path: ./golang.bitrise.yml
+
+workflows:
+  steps-check:
+    description: Run all shared checks for step repos
+    steps:
+    - bundle::yamlfmt: {}
+    - bundle::step-yml-audit: {}
+    - bundle::golangci-lint:
+        inputs:
+        - golangci_lint_version: 2.11.4
+    - bundle::go-test: {}
