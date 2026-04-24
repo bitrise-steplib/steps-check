@@ -1,6 +1,6 @@
 # TODO: this import causes an error when this file itself is imported by another step repo.
-# include:
-# - path: ./common.bitrise.yml
+include:
+- path: ./common.bitrise.yml
 
 step_bundles:
   yamlfmt:

@@ -2,8 +2,8 @@ format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 # TODO: this import causes an error when this file itself is imported by another step repo.
-# include:
-# - path: ./common.bitrise.yml
+include:
+- path: ./common.bitrise.yml
 
 step_bundles:
   golangci-lint:
