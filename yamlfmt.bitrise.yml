@@ -1,0 +1,27 @@
+# TODO: this import causes an error when this file itself is imported by another step repo.
+# include:
+# - path: ./common.bitrise.yml
+
+step_bundles:
+  yamlfmt:
+    steps:
+    # Work around the limitation that included bitrise.ymls can't access other files
+    - bundle::download-file:
+        title: Download ymlfmt config
+        inputs:
+        # TODO: final URL
+        - url: https://raw.githubusercontent.com/bitrise-steplib/steps-yaml-linter/refs/heads/main/.yamlfmt
+        - output_env_var: YAMLFMT_CONFIG_FILE
+    - script@1:
+        title: yamlfmt
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+
+            go run github.com/google/yamlfmt/cmd/yamlfmt@v0.21.0 \
+                -verbose \
+                -conf $YAMLFMT_CONFIG_FILE \
+                -match_type doublestar \
+                -exclude .github/**,vendor/** \
+                '**/*.yml'

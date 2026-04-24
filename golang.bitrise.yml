@@ -1,0 +1,61 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+# TODO: this import causes an error when this file itself is imported by another step repo.
+# include:
+# - path: ./common.bitrise.yml
+
+step_bundles:
+  golangci-lint:
+    inputs:
+    - golangci_lint_version: error-not-set
+    steps:
+    - bundle::download-file:
+        title: Download golangci-lint install script
+        inputs:
+        - url: https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh
+        - output_env_var: GOLANGCI_LINT_INSTALL_SCRIPT
+    # Work around the limitation that included can't access files (only bitrise.ymls can be included)
+    - bundle::download-file:
+        title: Download golangci-lint config file
+        inputs:
+        # TODO: final URL
+        - url: https://raw.githubusercontent.com/bitrise-steplib/steps-check/refs/heads/bitrise-includes/.golangci.yml
+        - output_env_var: GOLANGCI_LINT_CONFIG_FILE
+    - script@1:
+        title: Run golangci-lint
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+
+            if [[ -z "$golangci_lint_version" || "$golangci_lint_version" == "error-not-set" ]]; then
+              echo "Error: golangci_lint_version bundle input is not set."
+              echo "Each project must pin an explicit golangci-lint version because golangci-lint only supports a narrow range of Go versions."
+              echo "The version must be compatible with this project's Go toolchain. See: https://golangci-lint.run/docs/welcome/faq/#which-go-versions-are-supported"
+              exit 1
+            fi
+
+            sh "$GOLANGCI_LINT_INSTALL_SCRIPT" -b $(go env GOPATH)/bin v$golangci_lint_version
+            set -x
+            golangci-lint run --timeout 5m --color always --config $GOLANGCI_LINT_CONFIG_FILE
+  go-test:
+    steps:
+    - script@1:
+        title: Run go test
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -eo pipefail
+
+            # TODO: gotestfmt
+            go test -v ./...
+
+workflows:
+  check3:
+    steps:
+      - bundle::golangci-lint:
+          inputs:
+          - golangci_lint_version: 1.64.8
+      - bundle::go-test: {}
+
