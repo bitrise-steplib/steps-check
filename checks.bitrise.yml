@@ -135,5 +135,5 @@ workflows:
     - change-workdir@1:
         inputs:
         - path: $STEP_DIR
-    - go-list: { }
-    - go-test: { }
+    - go-list: {}
+    - go-test: {}

@@ -1,17 +1,22 @@
 format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
+include:
+- path: ./common.bitrise.yml
+- path: ./yamlfmt.bitrise.yml
+- path: ./golang.bitrise.yml
+
 workflows:
   check:
     steps:
-    - path::./: { }
+    - bundle::yamlfmt: {}
+    - bundle::golangci-lint:
+        inputs:
+        - golangci_lint_version: 2.11.4
+    - bundle::go-test: {}
 
   e2e:
     steps:
     - path::./:
         inputs:
         - workflow: e2e
-
-  generate_readme:
-    steps:
-    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: { }
