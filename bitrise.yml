@@ -14,9 +14,3 @@ workflows:
         inputs:
         - golangci_lint_version: 2.11.4
     - bundle::go-test: {}
-
-  e2e:
-    steps:
-    - path::./:
-        inputs:
-        - workflow: e2e
