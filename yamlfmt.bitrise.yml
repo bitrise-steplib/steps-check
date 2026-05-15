@@ -10,8 +10,7 @@ step_bundles:
     - bundle::download-file:
         title: Download ymlfmt config
         inputs:
-        # TODO: final URL
-        - url: https://raw.githubusercontent.com/bitrise-steplib/steps-check/refs/heads/bitrise-includes/.ymlfmt
+        - url: https://raw.githubusercontent.com/bitrise-steplib/steps-check/refs/heads/master/.ymlfmt
         - output_env_var: YAMLFMT_CONFIG_FILE
     - script@1:
         title: yamlfmt

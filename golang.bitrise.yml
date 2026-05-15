@@ -18,8 +18,7 @@ step_bundles:
     - bundle::download-file:
         title: Download golangci-lint config file
         inputs:
-        # TODO: final URL
-        - url: https://raw.githubusercontent.com/bitrise-steplib/steps-check/refs/heads/bitrise-includes/.golangci.yml
+        - url: https://raw.githubusercontent.com/bitrise-steplib/steps-check/refs/heads/master/.golangci.yml
         - output_env_var: GOLANGCI_LINT_CONFIG_FILE
     - script@1:
         title: Run golangci-lint
