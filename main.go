@@ -45,7 +45,7 @@ func mainR() error {
 	var config Config
 	configParser := stepconf.NewInputParser(envRepository)
 	if err := configParser.Parse(&config); err != nil {
-		return fmt.Errorf("Invalid inputs: %v", err)
+		return fmt.Errorf("invalid inputs: %v", err)
 	}
 
 	stepconf.Print(config)

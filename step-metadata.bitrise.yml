@@ -1,66 +1,13 @@
-#=========== DEPRECATED ===========
-# These workflows are deprecated, consider `include`ing the other bitrise.yml files from this repo
-# directly into step repos, or migrating existing usages to includes.
-
-format_version: "11"
-default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-
-workflows:
-  lint:
+step_bundles:
+  step-yml-audit:
     steps:
-    - change-workdir@1:
-        inputs:
-        - path: $STEP_DIR
-    - script:
-        title: YAML lint
-        inputs:
-        - content: |-
-            #!/bin/env bash
-            set -ex
-
-            if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-              # pipx is only available in OS repos from Ubuntu 23+, so we need to install via pip for now
-              ubuntu_version=$(lsb_release -rs)
-              if [[ $ubuntu_version == "20.04" ]]; then
-                apt-get remove -y yamllint
-                # Default Python version is the system-wide and it doesn't have venv (which is needed for pipx)
-                apt-get update
-                yes | apt-get install python3.8-venv
-                # Ubuntu 20 ships with an old pip that doesn't recognize the --break-system-packages flag
-                pip install pipx
-              else
-                pip install --user --break-system-packages pipx
-              fi
-              export PATH="$PATH:/root/.local/bin"
-              pipx ensurepath
-              source ~/.bashrc # reload $PATH changes
-            else
-              if brew list pipx &>/dev/null ; then
-                echo "pipx already installed"
-              else
-                echo "Installing pipx"
-                HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install pipx
-                export PATH="$PATH:$HOME/.local/bin"
-                pipx ensurepath
-                source ~/.bashrc # reload $PATH changes
-              fi
-            fi
-
-            pipx install yamllint
-            yamllint --format colored . # Config file is implicitly set via $YAMLLINT_CONFIG_FILE
     - script@1:
-        title: Audit step
-        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
+        title: Audit step.yml
         inputs:
-        - content: |-
-            #!/bin/env bash
-            set -ex
-            pwd
-
-            stepman audit --step-yml ./step.yml
+        - content: stepman audit --step-yml ./step.yml
+    # TODO: replace with readme-generator + autofix-ci steps
     - script@1:
         title: Check README.md is consistent with step.yml
-        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
         inputs:
         - content: |-
             #!/bin/env bash
@@ -106,7 +53,6 @@ workflows:
             fi
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
-        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
         inputs:
         - schema_url: https://raw.githubusercontent.com/bitrise-io/bitrise-json-schemas/main/step.schema.json
         - yaml_path: ./step.yml
@@ -119,21 +65,3 @@ workflows:
             I\[#/(inputs|outputs)+/\d+/opts/summary\] S\[#/definitions/EnvVarOpts/properties/summary/minLength\] length must be >= 1, but got 0
             I\[#/inputs/\d+/.+\] S\[#/definitions/InputEnvVar/additionalProperties/type\] expected .+, but got .+
             I\[#/inputs/\d+/opts/value_options\] S\[#/definitions/EnvVarOpts/properties/value_options/minItems\] minimum 2 items allowed, but found \d+ items
-    - script@1:
-        title: Run golangci-lint
-        run_if: "{{enveq \"SKIP_GO_CHECKS\" \"false\"}}"
-        is_always_run: true
-        inputs:
-        - content: |-
-            #!/bin/env bash
-            set -ex
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.64.8
-            ./bin/golangci-lint run --timeout 5m --color always
-
-  unit_test:
-    steps:
-    - change-workdir@1:
-        inputs:
-        - path: $STEP_DIR
-    - go-list: {}
-    - go-test: {}

@@ -1,16 +1,15 @@
-format_version: "11"
-default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
-
 include:
-- path: ./common.bitrise.yml
 - path: ./yamlfmt.bitrise.yml
+- path: ./step-metadata.bitrise.yml
 - path: ./golang.bitrise.yml
 
 workflows:
   check:
+    description: Run all shared checks for step repos
     steps:
     - bundle::yamlfmt: {}
     - bundle::golangci-lint:
         inputs:
         - golangci_lint_version: 2.11.4
     - bundle::go-test: {}
+    - bundle::step-yml-audit: {}
