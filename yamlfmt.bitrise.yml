@@ -3,6 +3,8 @@ include:
 
 step_bundles:
   yamlfmt:
+    inputs:
+    - yamlfmt_exclude: _tmp/**,.bitrise.secrets.yml,.git/**,.github/**,vendor/**
     steps:
     # Work around the limitation that included bitrise.ymls can't access other files from the repo (only bitrise.ymls can be included)
     - bundle::download-file:
@@ -22,5 +24,5 @@ step_bundles:
                 -verbose \
                 -conf $YAMLFMT_CONFIG_FILE \
                 -match_type doublestar \
-                -exclude .github/**,vendor/** \
+                -exclude $yamlfmt_exclude \
                 '**/*.yml'
