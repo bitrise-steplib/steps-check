@@ -59,7 +59,7 @@ workflows:
 
             stepman audit --step-yml ./step.yml
     - script@1:
-        title: Check README.md is consistent with step.yml
+        title: Generate README.md
         run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
         inputs:
         - content: |-
@@ -93,17 +93,10 @@ workflows:
               echo -e "\033[0;31mFailed to generate README.md.\033[0m"
               exit 1
             fi
-
-            diff -u README.md README.md.backup
-            if [[ $? -ne 0 ]]; then
-              echo -e "\033[0;35mREADME.md was not consistent with step.yml, regenerated it\033[0m"
-              if [[ $CI == "true" ]]; then
-                echo -e "\033[0;31mPlease run `bitrise run ${generate_readme_wf_name}` locally and commit the changes.\033[0m"
-              else
-                echo -e "\033[0;31mPlease compare README.md and README.md.backup to see diff, and commit README.md.\033[0m"
-              fi
-              exit 1
-            fi
+    - git::https://github.com/ofalvai/bitrise-step-autofix-ci.git@main:
+        inputs:
+        - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL
+        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
         run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
