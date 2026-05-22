@@ -5,13 +5,11 @@ include:
 - path: ./common.bitrise.yml
 - path: ./yamlfmt.bitrise.yml
 - path: ./golang.bitrise.yml
-- path: ./steps.bitrise.yml
 
 workflows:
   check:
     steps:
     - bundle::yamlfmt: {}
-    - bundle::autofix-ci: {}
     - bundle::golangci-lint:
         inputs:
         - golangci_lint_version: 2.11.4
