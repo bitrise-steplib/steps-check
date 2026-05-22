@@ -59,9 +59,13 @@ workflows:
 
             stepman audit --step-yml ./step.yml
     - script@1:
-        title: Generate README.md
-        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
-        inputs:
+
+
+
+
+        title: Generate README.md  
+        run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}" 
+        inputs: 
         - content: |-
             #!/bin/env bash
             set -x

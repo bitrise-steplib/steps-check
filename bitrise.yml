@@ -10,6 +10,10 @@ workflows:
   check:
     steps:
     - bundle::yamlfmt: {}
+    - git::https://github.com/ofalvai/bitrise-step-autofix-ci.git@main:
+        inputs:
+        - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL
+        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in `unified-ci` project
     - bundle::golangci-lint:
         inputs:
         - golangci_lint_version: 2.11.4
