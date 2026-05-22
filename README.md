@@ -1,56 +1,47 @@
-# Shared internal checks
+# Step linter
 
-This repo contains shared (internal) checks and workflows for first-party Bitrise steps and other Bitrise codebases.
+[![Step changelog](https://shields.io/github/v/release/bitrise-steplib/steps-check.git?include_prereleases&label=changelog&color=blueviolet)](https://github.com/bitrise-steplib/steps-check.git/releases)
 
-Why? To avoid duplication in ~100 step repos and to have a single source of truth for the checks and workflows.
+Runs step linters
 
-### Legacy checks
 
-This repo started as a custom Golang step that got included in step repo `bitrise.yml`s. Essentially, it runs [./checks.bitrise.yml](./checks.bitrise.yml).
+<details>
+<summary>Description</summary>
 
-There are still repos using this legacy pattern, but it's not recommended to add new checks there, just migrate the repos to the modern shared workflows discussed below.
+Runs step linters
 
-### Modern shared workflows
+</details>
 
-The modern way to share checks and workflows is to use the [bitrise.yml include feature](https://docs.bitrise.io/en/bitrise-ci/configure-builds/configuration-yaml/modular-yaml-configuration.html).
+## 🧩 Get started
 
-This repo defines a couple of reusable step bundles and workflows, such as:
+Add this step directly to your workflow in the [Bitrise Workflow Editor](https://docs.bitrise.io/en/bitrise-ci/workflows-and-pipelines/steps/adding-steps-to-a-workflow.html).
 
-- [./yamlfmt.bitrise.yml](./yamlfmt.bitrise.yml)
-- [./golang.bitrise.yml](./golang.bitrise.yml)
-- [./step-metadata.bitrise.yml](./step-metadata.bitrise.yml)
+You can also run this step directly with [Bitrise CLI](https://github.com/bitrise-io/bitrise).
 
-#### Usage in step repos:
+## ⚙️ Configuration
 
-```yaml
+<details>
+<summary>Inputs</summary>
 
-include:
-- repository: steps-check
-  branch: master
-  path: steps.bitrise.yml
-```
+| Key | Description | Flags | Default |
+| --- | --- | --- | --- |
+| `step_dir` | Step directory path | required | `.` |
+| `workflow` | Select the validation workflow to run | required | `lint unit_test` |
+| `skip_step_yml_validation` | Skip step.yml and README validation |  | `no` |
+| `skip_go_checks` | Skip golang related checks |  | `no` |
+</details>
 
-`bitrise run check` executes the `check` workflow defined in [steps.bitrise.yml](./steps.bitrise.yml), which includes all step-related shared checks.
+<details>
+<summary>Outputs</summary>
+There are no outputs defined in this step
+</details>
 
-#### Usage in non-step repos:
+## 🙋 Contributing
 
-Include the relevant pieces individually, then add them to the desired workflow. For example:
+We welcome [pull requests](https://github.com/bitrise-steplib/steps-check.git/pulls) and [issues](https://github.com/bitrise-steplib/steps-check.git/issues) against this repository.
 
-```yaml
-include:
-- repository: steps-check
-  branch: master
-  path: yamlfmt.bitrise.yml
-- repository: steps-check
-  branch: master
-  path: golang.bitrise.yml
+For pull requests, work on your changes in a forked repository and use the Bitrise CLI to [run step tests locally](https://docs.bitrise.io/en/bitrise-ci/bitrise-cli/running-your-first-local-build-with-the-cli.html).
 
-workflows:
-  pr-validation:
-    steps:
-    # [...] other steps
-    - bundle::yamlfmt: {}
-    - bundle::golangci-lint:
-        inputs:
-        - golangci_lint_version: 2.11.4
-    - bundle::go-test: {}
+Learn more about developing steps:
+
+- [Create your own step](https://docs.bitrise.io/en/bitrise-ci/workflows-and-pipelines/developing-your-own-bitrise-step/developing-a-new-step.html)

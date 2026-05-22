@@ -96,7 +96,7 @@ workflows:
     - git::https://github.com/ofalvai/bitrise-step-autofix-ci.git@main:
         inputs:
         - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
-        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN  # defined as a secret in Unified CI project
+        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in Unified CI project
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
         run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
