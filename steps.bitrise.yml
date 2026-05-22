@@ -3,11 +3,21 @@ include:
 - path: ./step-metadata.bitrise.yml
 - path: ./golang.bitrise.yml
 
+step_bundles:
+  autofix-ci:
+    steps:
+    - git::https://github.com/ofalvai/bitrise-step-autofix-ci.git@main:
+        inputs:
+        - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
+        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in Unified CI project
+
 workflows:
   check:
     description: Run all shared checks for step repos
     steps:
     - bundle::yamlfmt: {}
+    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: {}
+    - bundle::autofix-ci: {}
     - bundle::golangci-lint:
         inputs:
         - golangci_lint_version: 2.11.4
