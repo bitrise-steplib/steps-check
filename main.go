@@ -21,11 +21,26 @@ import (
 //go:embed checks.bitrise.yml
 var checkConfig string
 
+//go:embed includelinters.bitrise.yml
+var includeLintersConfig string
+
 //go:embed .yamllint.yml
 var yamllintConfig string
 
 const e2eWorkflow = "e2e"
 const yamllintEnvKey = "YAMLLINT_CONFIG_FILE"
+const golangciLintVersionEnvKey = "GOLANGCI_LINT_VERSION"
+const yamlfmtExcludeEnvKey = "YAMLFMT_EXCLUDE"
+
+// includeLinterWorkflows are the newer linters that are defined as modular workflow
+// includes (see includelinters.bitrise.yml). Repos in a different GitHub org than
+// steps-check can't use the plain `include:` mechanism, so this step runs them in a
+// compatibility mode against the embedded includelinters.bitrise.yml config instead of
+// the legacy checks.bitrise.yml.
+var includeLinterWorkflows = map[string]bool{
+	"yamlfmt":       true,
+	"golangci-lint": true,
+}
 
 // Config ...
 type Config struct {
@@ -33,6 +48,8 @@ type Config struct {
 	Workflow              []string `env:"workflow,multiline"`
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 	SkipGoChecks          bool     `env:"skip_go_checks,opt[yes,no]"`
+	GolangciLintVersion   string   `env:"golangci_lint_version"`
+	YamlfmtExclude        string   `env:"yamlfmt_exclude"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 	IsCI                  bool     `env:"CI"`
@@ -92,6 +109,13 @@ func mainR() error {
 		return err
 	}
 
+	// Compatibility mode config for the newer linters that are defined as modular
+	// workflow includes (yamlfmt, golangci-lint).
+	includeLintersConfigPath := filepath.Join(tmpDir, "includelinters.bitrise.yml")
+	if err := ioutil.WriteFile(includeLintersConfigPath, []byte(includeLintersConfig), 0600); err != nil {
+		return err
+	}
+
 	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
 	if err := ioutil.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
 		return err
@@ -101,16 +125,25 @@ func mainR() error {
 	}
 
 	for _, wf := range config.Workflow {
+		// Run the newer, include-based linters in compatibility mode against the
+		// embedded includelinters.bitrise.yml; everything else uses checks.bitrise.yml.
+		wfConfigPath := configPath
+		if includeLinterWorkflows[wf] {
+			wfConfigPath = includeLintersConfigPath
+		}
+
 		workflowCmd :=
 			commandFactory.Create(
 				"bitrise",
-				[]string{"run", wf, "--config", configPath},
+				[]string{"run", wf, "--config", wfConfigPath},
 				&command.Opts{
 					Dir: config.WorkDir,
 					Env: []string{
 						fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
 						fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
 						fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
+						fmt.Sprintf("%s=%s", golangciLintVersionEnvKey, config.GolangciLintVersion),
+						fmt.Sprintf("%s=%s", yamlfmtExcludeEnvKey, config.YamlfmtExclude),
 					},
 
 					Stdout: os.Stdout,

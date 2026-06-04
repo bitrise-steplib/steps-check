@@ -43,3 +43,19 @@ inputs:
     value_options:
     - "yes"
     - "no"
+- golangci_lint_version: ""
+  opts:
+    title: golangci-lint version
+    description: |-
+      golangci-lint version to use when running the `golangci-lint` workflow
+      (the include-based compatibility mode). Must be compatible with the
+      project's Go toolchain, see:
+      https://golangci-lint.run/docs/welcome/faq/#which-go-versions-are-supported
+    is_required: false
+- yamlfmt_exclude: _tmp/**,.bitrise.secrets.yml,.git/**,.github/**,vendor/**
+  opts:
+    title: yamlfmt exclude patterns
+    description: |-
+      Comma-separated doublestar glob patterns to exclude when running the
+      `yamlfmt` workflow (the include-based compatibility mode).
+    is_required: false
