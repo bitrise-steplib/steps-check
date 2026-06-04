@@ -21,15 +21,6 @@ import (
 //go:embed checks.bitrise.yml
 var checkConfig string
 
-//go:embed common.bitrise.yml
-var commonConfig string
-
-//go:embed golang.bitrise.yml
-var golangConfig string
-
-//go:embed yamlfmt.bitrise.yml
-var yamlfmtConfig string
-
 //go:embed .yamllint.yml
 var yamllintConfig string
 
@@ -39,25 +30,37 @@ const golangciLintVersionEnvKey = "GOLANGCI_LINT_VERSION"
 const golangciLintConfigFileEnvKey = "GOLANGCI_LINT_CONFIG_FILE"
 const yamlfmtExcludeEnvKey = "YAMLFMT_EXCLUDE"
 
+// bitriseRepositoryURLEnvKey is read by bitrise to resolve `repository:` includes.
+// We set it to a bitrise-steplib URL so the compatibility config's
+// `repository: steps-check` includes resolve regardless of the consumer repo's org.
+const bitriseRepositoryURLEnvKey = "BITRISE_CURRENT_REPOSITORY_URL"
+const stepsCheckRepositoryURL = "https://github.com/bitrise-steplib/steps-check.git"
+
 const defaultConfigName = "bitrise.yml"
+const compatibilityConfigName = "compatibility.bitrise.yml"
 
-// includeSources maps embedded file names to their contents so the compatibility
-// configs' `include:` directives can be resolved in-process (see inlineIncludes),
-// instead of relying on bitrise to resolve relative includes from the temp dir.
-var includeSources = map[string]string{
-	"common.bitrise.yml":  commonConfig,
-	"golang.bitrise.yml":  golangConfig,
-	"yamlfmt.bitrise.yml": yamlfmtConfig,
-}
+// compatibilityConfig pulls the shared linter workflows (yamlfmt, golangci-lint)
+// from the steps-check repo via repository-based includes. The `repository:
+// steps-check` includes normally only resolve within the bitrise-steplib org;
+// faking BITRISE_CURRENT_REPOSITORY_URL (see above) lets repos in any GitHub org
+// use them.
+const compatibilityConfig = `format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+include:
+- repository: steps-check
+  branch: master
+  path: yamlfmt.bitrise.yml
+- repository: steps-check
+  branch: master
+  path: golang.bitrise.yml
+`
 
-// compatibilityWorkflows maps the newer, include-based linter workflows to the
-// embedded bitrise.yml that defines a dedicated compatibility workflow for them. Repos
-// in a different GitHub org than steps-check can't use the modular `include:`
-// mechanism, so this step runs these workflows against the embedded configs instead of
+// compatibilityWorkflows are the linter workflows defined in the included
+// steps-check configs; the step runs them against compatibilityConfig instead of
 // the legacy checks.bitrise.yml.
-var compatibilityWorkflows = map[string]string{
-	"yamlfmt":       "yamlfmt.bitrise.yml",
-	"golangci-lint": "golang.bitrise.yml",
+var compatibilityWorkflows = map[string]bool{
+	"yamlfmt":       true,
+	"golangci-lint": true,
 }
 
 // Config ...
@@ -124,20 +127,16 @@ func mainR() error {
 	}
 
 	// Legacy checks config (has no includes).
-	if err := ioutil.WriteFile(filepath.Join(tmpDir, defaultConfigName), []byte(checkConfig), 0600); err != nil {
+	configPath := filepath.Join(tmpDir, defaultConfigName)
+	if err := ioutil.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
 		return err
 	}
 
-	// Compatibility configs: resolve their `include:`s in-process and write them out
-	// self-contained, so bitrise doesn't have to resolve relative includes itself.
-	for _, configName := range compatibilityWorkflows {
-		inlined, err := inlineIncludes(configName, includeSources)
-		if err != nil {
-			return fmt.Errorf("failed to resolve includes in %s: %w", configName, err)
-		}
-		if err := ioutil.WriteFile(filepath.Join(tmpDir, configName), []byte(inlined), 0600); err != nil {
-			return err
-		}
+	// Compatibility config: pulls the shared linter workflows from the steps-check
+	// repo via repository-based includes (resolved with BITRISE_CURRENT_REPOSITORY_URL).
+	compatConfigPath := filepath.Join(tmpDir, compatibilityConfigName)
+	if err := ioutil.WriteFile(compatConfigPath, []byte(compatibilityConfig), 0600); err != nil {
+		return err
 	}
 
 	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
@@ -149,29 +148,31 @@ func mainR() error {
 	}
 
 	for _, wf := range config.Workflow {
-		// Run the newer, include-based linters against their embedded compatibility
-		// config; everything else uses the legacy checks.bitrise.yml.
-		configName := defaultConfigName
-		if compatConfigName, ok := compatibilityWorkflows[wf]; ok {
-			configName = compatConfigName
+		// Run the newer, include-based linters against the compatibility config;
+		// everything else uses the legacy checks.bitrise.yml.
+		wfConfigPath := configPath
+		workflowEnv := []string{
+			fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
+			fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
+			fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
+			fmt.Sprintf("%s=%s", golangciLintVersionEnvKey, config.GolangciLintVersion),
+			fmt.Sprintf("%s=%s", golangciLintConfigFileEnvKey, config.GolangciLintConfig),
+			fmt.Sprintf("%s=%s", yamlfmtExcludeEnvKey, config.YamlfmtExclude),
 		}
-		wfConfigPath := filepath.Join(tmpDir, configName)
+		if compatibilityWorkflows[wf] {
+			wfConfigPath = compatConfigPath
+			// Fake the bitrise-steplib org so the `repository: steps-check` includes
+			// resolve even when the consumer repo lives in a different GitHub org.
+			workflowEnv = append(workflowEnv, fmt.Sprintf("%s=%s", bitriseRepositoryURLEnvKey, stepsCheckRepositoryURL))
+		}
 
 		workflowCmd :=
 			commandFactory.Create(
 				"bitrise",
 				[]string{"run", wf, "--config", wfConfigPath},
 				&command.Opts{
-					Dir: config.WorkDir,
-					Env: []string{
-						fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
-						fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
-						fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
-						fmt.Sprintf("%s=%s", golangciLintVersionEnvKey, config.GolangciLintVersion),
-						fmt.Sprintf("%s=%s", golangciLintConfigFileEnvKey, config.GolangciLintConfig),
-						fmt.Sprintf("%s=%s", yamlfmtExcludeEnvKey, config.YamlfmtExclude),
-					},
-
+					Dir:    config.WorkDir,
+					Env:    workflowEnv,
 					Stdout: os.Stdout,
 					Stderr: os.Stderr,
 				})

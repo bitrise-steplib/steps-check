@@ -58,9 +58,9 @@ workflows:
 
 #### Usage from a different GitHub org (compatibility mode)
 
-The `include:` mechanism above only resolves for repos in the **same** GitHub org as `steps-check`. Repos in a different org (e.g. `bitrise-io`) can't pull in these `bitrise.yml`s via `include:`, so they run the same checks through the legacy Golang step instead.
+The `include: - repository: steps-check` mechanism above only resolves for repos in the **same** GitHub org as `steps-check` (bitrise resolves the bare `steps-check` repository name against the current repo's org). Repos in a different org (e.g. `bitrise-io`) can't pull in these `bitrise.yml`s, so they run the same checks through the legacy Golang step instead.
 
-The step embeds `yamlfmt.bitrise.yml` and `golang.bitrise.yml` and runs a dedicated compatibility workflow for each linter. Select them with the `workflow` input (it's multiline, so you can run several in one step):
+Under the hood the step runs an include config that pulls `yamlfmt.bitrise.yml` and `golang.bitrise.yml` from this repo, and sets `BITRISE_CURRENT_REPOSITORY_URL` to a `bitrise-steplib` URL so the `repository: steps-check` includes resolve regardless of the consumer repo's org. Select the linter workflows with the `workflow` input (it's multiline, so you can run several in one step):
 
 ```yaml
 workflows:
