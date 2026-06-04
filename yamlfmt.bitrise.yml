@@ -1,5 +1,20 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
 include:
 - path: ./common.bitrise.yml
+
+workflows:
+  # Compatibility workflow run by the steps-check step (go binary) for repos in a
+  # different GitHub org than steps-check, where the modular `include:` mechanism
+  # doesn't work. Repos in the same org should `include:` this file and call
+  # `bundle::yamlfmt` directly instead.
+  yamlfmt:
+    description: Runs the shared yamlfmt formatter check via the bundle below.
+    steps:
+    - bundle::yamlfmt:
+        inputs:
+        - yamlfmt_exclude: $YAMLFMT_EXCLUDE
 
 step_bundles:
   yamlfmt:

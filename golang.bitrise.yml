@@ -4,6 +4,18 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 include:
 - path: ./common.bitrise.yml
 
+workflows:
+  # Compatibility workflow run by the steps-check step (go binary) for repos in a
+  # different GitHub org than steps-check, where the modular `include:` mechanism
+  # doesn't work. Repos in the same org should `include:` this file and call
+  # `bundle::golangci-lint` directly instead.
+  golangci-lint:
+    description: Runs the shared golangci-lint check via the bundle below.
+    steps:
+    - bundle::golangci-lint:
+        inputs:
+        - golangci_lint_version: $GOLANGCI_LINT_VERSION
+
 step_bundles:
   golangci-lint:
     inputs:

@@ -21,8 +21,14 @@ import (
 //go:embed checks.bitrise.yml
 var checkConfig string
 
-//go:embed includelinters.bitrise.yml
-var includeLintersConfig string
+//go:embed common.bitrise.yml
+var commonConfig string
+
+//go:embed golang.bitrise.yml
+var golangConfig string
+
+//go:embed yamlfmt.bitrise.yml
+var yamlfmtConfig string
 
 //go:embed .yamllint.yml
 var yamllintConfig string
@@ -33,14 +39,25 @@ const golangciLintVersionEnvKey = "GOLANGCI_LINT_VERSION"
 const golangciLintConfigFileEnvKey = "GOLANGCI_LINT_CONFIG_FILE"
 const yamlfmtExcludeEnvKey = "YAMLFMT_EXCLUDE"
 
-// includeLinterWorkflows are the newer linters that are defined as modular workflow
-// includes (see includelinters.bitrise.yml). Repos in a different GitHub org than
-// steps-check can't use the plain `include:` mechanism, so this step runs them in a
-// compatibility mode against the embedded includelinters.bitrise.yml config instead of
+const defaultConfigName = "bitrise.yml"
+
+// embeddedConfigs are written next to each other in a temp dir before running, so the
+// compatibility configs can resolve their relative `include: ./common.bitrise.yml`.
+var embeddedConfigs = map[string]string{
+	defaultConfigName:     checkConfig,
+	"common.bitrise.yml":  commonConfig,
+	"golang.bitrise.yml":  golangConfig,
+	"yamlfmt.bitrise.yml": yamlfmtConfig,
+}
+
+// compatibilityWorkflows maps the newer, include-based linter workflows to the
+// embedded bitrise.yml that defines a dedicated compatibility workflow for them. Repos
+// in a different GitHub org than steps-check can't use the modular `include:`
+// mechanism, so this step runs these workflows against the embedded configs instead of
 // the legacy checks.bitrise.yml.
-var includeLinterWorkflows = map[string]bool{
-	"yamlfmt":       true,
-	"golangci-lint": true,
+var compatibilityWorkflows = map[string]string{
+	"yamlfmt":       "yamlfmt.bitrise.yml",
+	"golangci-lint": "golang.bitrise.yml",
 }
 
 // Config ...
@@ -106,16 +123,10 @@ func mainR() error {
 		return err
 	}
 
-	configPath := filepath.Join(tmpDir, "bitrise.yml")
-	if err := ioutil.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
-		return err
-	}
-
-	// Compatibility mode config for the newer linters that are defined as modular
-	// workflow includes (yamlfmt, golangci-lint).
-	includeLintersConfigPath := filepath.Join(tmpDir, "includelinters.bitrise.yml")
-	if err := ioutil.WriteFile(includeLintersConfigPath, []byte(includeLintersConfig), 0600); err != nil {
-		return err
+	for name, content := range embeddedConfigs {
+		if err := ioutil.WriteFile(filepath.Join(tmpDir, name), []byte(content), 0600); err != nil {
+			return err
+		}
 	}
 
 	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
@@ -127,12 +138,13 @@ func mainR() error {
 	}
 
 	for _, wf := range config.Workflow {
-		// Run the newer, include-based linters in compatibility mode against the
-		// embedded includelinters.bitrise.yml; everything else uses checks.bitrise.yml.
-		wfConfigPath := configPath
-		if includeLinterWorkflows[wf] {
-			wfConfigPath = includeLintersConfigPath
+		// Run the newer, include-based linters against their embedded compatibility
+		// config; everything else uses the legacy checks.bitrise.yml.
+		configName := defaultConfigName
+		if compatConfigName, ok := compatibilityWorkflows[wf]; ok {
+			configName = compatConfigName
 		}
+		wfConfigPath := filepath.Join(tmpDir, configName)
 
 		workflowCmd :=
 			commandFactory.Create(
