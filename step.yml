@@ -31,6 +31,7 @@ inputs:
     is_required: true
 - skip_step_yml_validation: "no"
   opts:
+    category: Deprecated
     title: Skip step.yml and README validation
     description: Skip step.yml and README validation
     value_options:
@@ -38,6 +39,7 @@ inputs:
     - "no"
 - skip_go_checks: "no"
   opts:
+    category: Deprecated
     title: Skip golang related checks
     description: Skip golang related checks
     value_options:
@@ -45,6 +47,7 @@ inputs:
     - "no"
 - golangci_lint_version: ""
   opts:
+    category: GitHub Org compatibility mode
     title: golangci-lint version
     description: |-
       golangci-lint version to use when running the `golangci-lint` workflow
@@ -54,6 +57,7 @@ inputs:
     is_required: false
 - golangci_lint_config_file: ""
   opts:
+    category: GitHub Org compatibility mode
     title: golangci-lint config file
     description: |-
       Optional path to a golangci-lint config file (e.g. `.golangci.yml`) in the
@@ -63,6 +67,7 @@ inputs:
     is_required: false
 - yamlfmt_exclude: _tmp/**,.bitrise.secrets.yml,.git/**,.github/**,vendor/**
   opts:
+    category: GitHub Org compatibility mode
     title: yamlfmt exclude patterns
     description: |-
       Comma-separated doublestar glob patterns to exclude when running the
@@ -70,6 +75,7 @@ inputs:
     is_required: false
 - steps_check_branch: master
   opts:
+    category: GitHub Org compatibility mode
     title: steps-check branch (testing)
     description: |-
       Branch of the steps-check repo to pull the shared linter workflows from in
