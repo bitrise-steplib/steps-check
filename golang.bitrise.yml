@@ -61,9 +61,12 @@ step_bundles:
               config_file="$GOLANGCI_LINT_CONFIG_FILE"
             fi
 
-            sh "$GOLANGCI_LINT_INSTALL_SCRIPT" -b $(go env GOPATH)/bin v$golangci_lint_version
+            # Install into GOPATH/bin and invoke by full path, since GOPATH/bin is
+            # not always on PATH (e.g. asdf-managed Go in CI).
+            bindir="$(go env GOPATH)/bin"
+            sh "$GOLANGCI_LINT_INSTALL_SCRIPT" -b "$bindir" v$golangci_lint_version
             set -x
-            golangci-lint run --timeout 5m --color always --config "$config_file"
+            "$bindir/golangci-lint" run --timeout 5m --color always --config "$config_file"
   go-test:
     steps:
     - script@1:
