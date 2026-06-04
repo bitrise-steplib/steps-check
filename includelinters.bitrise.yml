@@ -35,3 +35,4 @@ workflows:
     - bundle::golangci-lint:
         inputs:
         - golangci_lint_version: $GOLANGCI_LINT_VERSION
+        - golangci_lint_config_file: $GOLANGCI_LINT_CONFIG_FILE

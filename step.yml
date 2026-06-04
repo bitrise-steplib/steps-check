@@ -52,6 +52,15 @@ inputs:
       project's Go toolchain, see:
       https://golangci-lint.run/docs/welcome/faq/#which-go-versions-are-supported
     is_required: false
+- golangci_lint_config_file: ""
+  opts:
+    title: golangci-lint config file
+    description: |-
+      Optional path to a golangci-lint config file (e.g. `.golangci.yml`) in the
+      consumer repo, used when running the `golangci-lint` workflow. When set, it is
+      used instead of the shared steps-check config. When empty, the shared config is
+      downloaded from steps-check.
+    is_required: false
 - yamlfmt_exclude: _tmp/**,.bitrise.secrets.yml,.git/**,.github/**,vendor/**
   opts:
     title: yamlfmt exclude patterns

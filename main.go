@@ -30,6 +30,7 @@ var yamllintConfig string
 const e2eWorkflow = "e2e"
 const yamllintEnvKey = "YAMLLINT_CONFIG_FILE"
 const golangciLintVersionEnvKey = "GOLANGCI_LINT_VERSION"
+const golangciLintConfigFileEnvKey = "GOLANGCI_LINT_CONFIG_FILE"
 const yamlfmtExcludeEnvKey = "YAMLFMT_EXCLUDE"
 
 // includeLinterWorkflows are the newer linters that are defined as modular workflow
@@ -49,6 +50,7 @@ type Config struct {
 	SkipStepYMLValidation bool     `env:"skip_step_yml_validation,opt[yes,no]"`
 	SkipGoChecks          bool     `env:"skip_go_checks,opt[yes,no]"`
 	GolangciLintVersion   string   `env:"golangci_lint_version"`
+	GolangciLintConfig    string   `env:"golangci_lint_config_file"`
 	YamlfmtExclude        string   `env:"yamlfmt_exclude"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
@@ -143,6 +145,7 @@ func mainR() error {
 						fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
 						fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
 						fmt.Sprintf("%s=%s", golangciLintVersionEnvKey, config.GolangciLintVersion),
+						fmt.Sprintf("%s=%s", golangciLintConfigFileEnvKey, config.GolangciLintConfig),
 						fmt.Sprintf("%s=%s", yamlfmtExcludeEnvKey, config.YamlfmtExclude),
 					},
 
