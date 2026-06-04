@@ -41,10 +41,10 @@ const yamlfmtExcludeEnvKey = "YAMLFMT_EXCLUDE"
 
 const defaultConfigName = "bitrise.yml"
 
-// embeddedConfigs are written next to each other in a temp dir before running, so the
-// compatibility configs can resolve their relative `include: ./common.bitrise.yml`.
-var embeddedConfigs = map[string]string{
-	defaultConfigName:     checkConfig,
+// includeSources maps embedded file names to their contents so the compatibility
+// configs' `include:` directives can be resolved in-process (see inlineIncludes),
+// instead of relying on bitrise to resolve relative includes from the temp dir.
+var includeSources = map[string]string{
 	"common.bitrise.yml":  commonConfig,
 	"golang.bitrise.yml":  golangConfig,
 	"yamlfmt.bitrise.yml": yamlfmtConfig,
@@ -123,8 +123,19 @@ func mainR() error {
 		return err
 	}
 
-	for name, content := range embeddedConfigs {
-		if err := ioutil.WriteFile(filepath.Join(tmpDir, name), []byte(content), 0600); err != nil {
+	// Legacy checks config (has no includes).
+	if err := ioutil.WriteFile(filepath.Join(tmpDir, defaultConfigName), []byte(checkConfig), 0600); err != nil {
+		return err
+	}
+
+	// Compatibility configs: resolve their `include:`s in-process and write them out
+	// self-contained, so bitrise doesn't have to resolve relative includes itself.
+	for _, configName := range compatibilityWorkflows {
+		inlined, err := inlineIncludes(configName, includeSources)
+		if err != nil {
+			return fmt.Errorf("failed to resolve includes in %s: %w", configName, err)
+		}
+		if err := ioutil.WriteFile(filepath.Join(tmpDir, configName), []byte(inlined), 0600); err != nil {
 			return err
 		}
 	}
