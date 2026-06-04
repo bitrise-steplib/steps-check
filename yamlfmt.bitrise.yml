@@ -36,7 +36,7 @@ step_bundles:
 
             go run github.com/google/yamlfmt/cmd/yamlfmt@v0.21.0 \
                 -verbose \
-                -conf $YAMLFMT_CONFIG_FILE \
+                -conf "$YAMLFMT_CONFIG_FILE" \
                 -match_type doublestar \
-                -exclude $yamlfmt_exclude \
+                -exclude "$yamlfmt_exclude" \
                 '**/*.yml'
