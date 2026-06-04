@@ -68,3 +68,11 @@ inputs:
       Comma-separated doublestar glob patterns to exclude when running the
       `yamlfmt` workflow (the include-based compatibility mode).
     is_required: false
+- steps_check_branch: master
+  opts:
+    title: steps-check branch (testing)
+    description: |-
+      Branch of the steps-check repo to pull the shared linter workflows from in
+      compatibility mode (`yamlfmt` / `golangci-lint`). Defaults to master; override
+      only to test changes to the shared configs before they are merged.
+    is_required: false

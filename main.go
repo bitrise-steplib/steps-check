@@ -38,20 +38,21 @@ const stepsCheckRepositoryURL = "https://github.com/bitrise-steplib/steps-check.
 
 const defaultConfigName = "bitrise.yml"
 const compatibilityConfigName = "compatibility.bitrise.yml"
+const defaultStepsCheckBranch = "master"
 
-// compatibilityConfig pulls the shared linter workflows (yamlfmt, golangci-lint)
-// from the steps-check repo via repository-based includes. The `repository:
-// steps-check` includes normally only resolve within the bitrise-steplib org;
-// faking BITRISE_CURRENT_REPOSITORY_URL (see above) lets repos in any GitHub org
-// use them.
-const compatibilityConfig = `format_version: "11"
+// compatibilityConfigTemplate pulls the shared linter workflows (yamlfmt,
+// golangci-lint) from the steps-check repo via repository-based includes. The
+// `repository: steps-check` includes normally only resolve within the
+// bitrise-steplib org; faking BITRISE_CURRENT_REPOSITORY_URL (see above) lets repos
+// in any GitHub org use them. The single verb is the steps-check branch to pull from.
+const compatibilityConfigTemplate = `format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 include:
 - repository: steps-check
-  branch: master
+  branch: %[1]s
   path: yamlfmt.bitrise.yml
 - repository: steps-check
-  branch: master
+  branch: %[1]s
   path: golang.bitrise.yml
 `
 
@@ -72,6 +73,7 @@ type Config struct {
 	GolangciLintVersion   string   `env:"golangci_lint_version"`
 	GolangciLintConfig    string   `env:"golangci_lint_config_file"`
 	YamlfmtExclude        string   `env:"yamlfmt_exclude"`
+	StepsCheckBranch      string   `env:"steps_check_branch"`
 	SegmentWriteKey       string   `env:"SEGMENT_WRITE_KEY"`
 	ParentBuildURL        string   `env:"PARENT_BUILD_URL"`
 	IsCI                  bool     `env:"CI"`
@@ -134,8 +136,13 @@ func mainR() error {
 
 	// Compatibility config: pulls the shared linter workflows from the steps-check
 	// repo via repository-based includes (resolved with BITRISE_CURRENT_REPOSITORY_URL).
+	branch := config.StepsCheckBranch
+	if branch == "" {
+		branch = defaultStepsCheckBranch
+	}
 	compatConfigPath := filepath.Join(tmpDir, compatibilityConfigName)
-	if err := ioutil.WriteFile(compatConfigPath, []byte(compatibilityConfig), 0600); err != nil {
+	compatConfigContent := fmt.Sprintf(compatibilityConfigTemplate, branch)
+	if err := ioutil.WriteFile(compatConfigPath, []byte(compatConfigContent), 0600); err != nil {
 		return err
 	}
 
@@ -151,19 +158,23 @@ func mainR() error {
 		// Run the newer, include-based linters against the compatibility config;
 		// everything else uses the legacy checks.bitrise.yml.
 		wfConfigPath := configPath
-		workflowEnv := []string{
-			fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
-			fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
-			fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
-			fmt.Sprintf("%s=%s", golangciLintVersionEnvKey, config.GolangciLintVersion),
-			fmt.Sprintf("%s=%s", golangciLintConfigFileEnvKey, config.GolangciLintConfig),
-			fmt.Sprintf("%s=%s", yamlfmtExcludeEnvKey, config.YamlfmtExclude),
-		}
+		var workflowEnv []string
 		if compatibilityWorkflows[wf] {
 			wfConfigPath = compatConfigPath
-			// Fake the bitrise-steplib org so the `repository: steps-check` includes
-			// resolve even when the consumer repo lives in a different GitHub org.
-			workflowEnv = append(workflowEnv, fmt.Sprintf("%s=%s", bitriseRepositoryURLEnvKey, stepsCheckRepositoryURL))
+			workflowEnv = []string{
+				fmt.Sprintf("%s=%s", golangciLintVersionEnvKey, config.GolangciLintVersion),
+				fmt.Sprintf("%s=%s", golangciLintConfigFileEnvKey, config.GolangciLintConfig),
+				fmt.Sprintf("%s=%s", yamlfmtExcludeEnvKey, config.YamlfmtExclude),
+				// Fake the bitrise-steplib org so the `repository: steps-check` includes
+				// resolve even when the consumer repo lives in a different GitHub org.
+				fmt.Sprintf("%s=%s", bitriseRepositoryURLEnvKey, stepsCheckRepositoryURL),
+			}
+		} else {
+			workflowEnv = []string{
+				fmt.Sprintf("STEP_DIR=%s", config.WorkDir),
+				fmt.Sprintf("SKIP_STEP_YML_VALIDATION=%t", config.SkipStepYMLValidation),
+				fmt.Sprintf("SKIP_GO_CHECKS=%t", config.SkipGoChecks),
+			}
 		}
 
 		workflowCmd :=
