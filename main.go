@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -123,14 +122,14 @@ func mainR() error {
 	}
 
 	// Run other, non-e2e workflows
-	tmpDir, err := ioutil.TempDir("", "")
+	tmpDir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return err
 	}
 
 	// Legacy checks config (has no includes).
 	configPath := filepath.Join(tmpDir, defaultConfigName)
-	if err := ioutil.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
+	if err := os.WriteFile(configPath, []byte(checkConfig), 0600); err != nil {
 		return err
 	}
 
@@ -142,12 +141,12 @@ func mainR() error {
 	}
 	compatConfigPath := filepath.Join(tmpDir, compatibilityConfigName)
 	compatConfigContent := fmt.Sprintf(compatibilityConfigTemplate, branch)
-	if err := ioutil.WriteFile(compatConfigPath, []byte(compatConfigContent), 0600); err != nil {
+	if err := os.WriteFile(compatConfigPath, []byte(compatConfigContent), 0600); err != nil {
 		return err
 	}
 
 	yamllintPath := filepath.Join(tmpDir, ".yamllint.yml")
-	if err := ioutil.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
+	if err := os.WriteFile(yamllintPath, []byte(yamllintConfig), 0600); err != nil {
 		return err
 	}
 	if err := os.Setenv(yamllintEnvKey, yamllintPath); err != nil {
