@@ -61,10 +61,14 @@ step_bundles:
               config_file="$GOLANGCI_LINT_CONFIG_FILE"
             fi
 
-            # Install into a writable temp dir and invoke by full path: GOPATH/bin
-            # isn't always writable or on PATH (e.g. asdf-managed Go in CI).
-            bindir="$(mktemp -d)"
-            sh "$GOLANGCI_LINT_INSTALL_SCRIPT" -b "$bindir" v$golangci_lint_version
+            # Install into a stable, writable, per-version dir and invoke by full
+            # path. GOPATH/bin isn't always writable or on PATH (e.g. asdf-managed Go
+            # in CI); the fixed path lets the binary be reused/cached across runs.
+            bindir="${TMPDIR%/}/golangci-lint/$golangci_lint_version"
+            if [[ ! -x "$bindir/golangci-lint" ]]; then
+              mkdir -p "$bindir"
+              sh "$GOLANGCI_LINT_INSTALL_SCRIPT" -b "$bindir" v$golangci_lint_version
+            fi
             set -x
             "$bindir/golangci-lint" run --timeout 5m --color always --config "$config_file"
   go-test:
