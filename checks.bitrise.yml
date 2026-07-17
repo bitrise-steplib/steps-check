@@ -93,7 +93,7 @@ workflows:
               echo -e "\033[0;31mFailed to generate README.md.\033[0m"
               exit 1
             fi
-    - git::https://github.com/ofalvai/bitrise-step-autofix-ci.git@main:
+    - autofix-ci@1:
         inputs:
         - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
         - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in Unified CI project
