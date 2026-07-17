@@ -8,6 +8,11 @@ workflows:
     description: Run all shared checks for step repos
     steps:
     - bundle::yamlfmt: {}
+    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: {}
+    - autofix-ci@1:
+        inputs:
+        - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
+        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in Unified CI project
     - bundle::golangci-lint:
         inputs:
         - golangci_lint_version: 2.11.4
