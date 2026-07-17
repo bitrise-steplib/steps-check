@@ -93,10 +93,6 @@ workflows:
               echo -e "\033[0;31mFailed to generate README.md.\033[0m"
               exit 1
             fi
-    - autofix-ci@1:
-        inputs:
-        - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
-        - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in Unified CI project
     - git::https://github.com/bitrise-steplib/steps-validate-json-schema.git@main:
         title: Validate JSON schema
         run_if: "{{enveq \"SKIP_STEP_YML_VALIDATION\" \"false\"}}"
