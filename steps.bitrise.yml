@@ -8,6 +8,7 @@ workflows:
     description: Run all shared checks for step repos
     steps:
     - bundle::yamlfmt: {}
+    - bundle::step-yml-audit: {}
     - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: {}
     - autofix-ci@1:
         inputs:
@@ -17,4 +18,3 @@ workflows:
         inputs:
         - golangci_lint_version: 2.11.4
     - bundle::go-test: {}
-    - bundle::step-yml-audit: {}
