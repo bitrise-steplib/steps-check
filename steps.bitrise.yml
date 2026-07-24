@@ -9,7 +9,26 @@ workflows:
     steps:
     - bundle::yamlfmt: {}
     - bundle::step-yml-audit: {}
-    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: {}
+    - script:
+        title: Detect readme-generator doc sections
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -ex
+
+            # By convention, step repos have their example and contribution sections in the docs folder, but this is not a requirement.
+            # If the files are not found, the readme-generator step will just skip them.
+            if [ -f "docs/examples.md" ]; then
+              envman add --key EXAMPLE_SECTION_PATH --value "docs/examples.md"
+            fi
+
+            if [ -f "docs/contribution.md" ]; then
+              envman add --key CONTRIB_SECTION_PATH --value "docs/contribution.md"
+            fi
+    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main:
+        inputs:
+        - example_section: $EXAMPLE_SECTION_PATH
+        - contrib_section: $CONTRIB_SECTION_PATH
     - autofix-ci@1:
         inputs:
         - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
