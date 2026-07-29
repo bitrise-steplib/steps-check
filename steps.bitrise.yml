@@ -14,17 +14,31 @@ workflows:
         inputs:
         - content: |-
             #!/bin/env bash
-            set -ex
+            set -e
 
-            # By convention, step repos have their example and contribution sections in the docs folder, but this is not a requirement.
-            # If the files are not found, the readme-generator step will just skip them.
-            if [ -f "docs/examples.md" ]; then
-              envman add --key EXAMPLE_SECTION_PATH --value "docs/examples.md"
-            fi
+            # By convention, step repos have their example and contribution sections in the docs folder, but this is not a
+            # requirement and the file names are not consistent across the step library. We check every name in use and pass
+            # the first match to the readme-generator step. If no file is found, the section is left out of the generated
+            # README.md and autofix-ci commits the removal, so an unlisted name means silently dropped docs: keep these
+            # lists in sync with the step repos.
+            detect_section() {
+              env_key="$1"
+              shift
 
-            if [ -f "docs/contribution.md" ]; then
-              envman add --key CONTRIB_SECTION_PATH --value "docs/contribution.md"
-            fi
+              for candidate in "$@"; do
+                if [ -f "${candidate}" ]; then
+                  echo "Using ${env_key} from ${candidate}"
+                  envman add --key "${env_key}" --value "${candidate}"
+                  return 0
+                fi
+              done
+
+              echo "No file found for ${env_key} (looked for: $*), the section will be skipped"
+              envman add --key "${env_key}" --value ""
+            }
+
+            detect_section EXAMPLE_SECTION_PATH docs/examples.md docs/example.md
+            detect_section CONTRIB_SECTION_PATH docs/contribution.md docs/contributing.md
     - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main:
         inputs:
         - example_section: $EXAMPLE_SECTION_PATH
