@@ -52,5 +52,5 @@ workflows:
     - bundle::yamlfmt: {}
     - bundle::golangci-lint:
         inputs:
-        - golangci_lint_version: 2.11.4
+        - golangci_lint_version: 2.13.2
     - bundle::go-test: {}
