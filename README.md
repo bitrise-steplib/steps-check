@@ -19,6 +19,7 @@ This repo defines a couple of reusable step bundles and workflows, such as:
 - [./yamlfmt.bitrise.yml](./yamlfmt.bitrise.yml)
 - [./golang.bitrise.yml](./golang.bitrise.yml)
 - [./step-metadata.bitrise.yml](./step-metadata.bitrise.yml)
+- [./shell.bitrise.yml](./shell.bitrise.yml)
 
 #### Usage in step repos:
 
@@ -31,6 +32,8 @@ include:
 ```
 
 `bitrise run check` executes the `check` workflow defined in [steps.bitrise.yml](./steps.bitrise.yml), which includes all step-related shared checks.
+
+The `check` workflow works for both Go and bash based steps: golangci-lint and the Go unit tests only run when the repo has a `go.mod`, and shellcheck only runs on the entry file declared in `step.yml` (`toolkit.bash.entry_file`).
 
 #### Usage in non-step repos:
 

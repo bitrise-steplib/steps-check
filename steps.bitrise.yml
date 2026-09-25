@@ -2,13 +2,45 @@ include:
 - path: ./yamlfmt.bitrise.yml
 - path: ./step-metadata.bitrise.yml
 - path: ./golang.bitrise.yml
+- path: ./shell.bitrise.yml
 
 workflows:
   check:
     description: Run all shared checks for step repos
     steps:
+    - script:
+        title: Detect step toolkit
+        inputs:
+        - content: |-
+            #!/bin/env bash
+            set -e
+
+            # Steps are either Go or bash based. Go checks only run when the repo has a Go module, and the shell
+            # script linter (shellcheck) only when step.yml declares a bash toolkit entry file, so both kinds of
+            # step repos can include this workflow as is.
+            if [ -f go.mod ]; then
+              echo "go.mod found, Go checks are enabled"
+              envman add --key STEPS_CHECK_GO_MODULE --value "true"
+            else
+              echo "No go.mod found, Go checks are skipped"
+              envman add --key STEPS_CHECK_GO_MODULE --value "false"
+            fi
+
+            # toolkit.bash.entry_file from step.yml (empty for Go steps)
+            bash_entry_file=$(sed -n 's/^ *entry_file: *//p' step.yml | head -n 1 | sed -E "s/^['\"](.*)['\"]$/\1/")
+            if [ -n "$bash_entry_file" ]; then
+              echo "Bash toolkit entry file found (${bash_entry_file}), shellcheck is enabled"
+            else
+              echo "No bash toolkit entry file found in step.yml, shellcheck is skipped"
+            fi
+            envman add --key STEPS_CHECK_BASH_ENTRY_FILE --value "$bash_entry_file"
     - bundle::yamlfmt: {}
     - bundle::step-yml-audit: {}
+    - bundle::shellcheck:
+        run_if: |-
+          {{ not (enveq "STEPS_CHECK_BASH_ENTRY_FILE" "") }}
+        inputs:
+        - shellcheck_files: $STEPS_CHECK_BASH_ENTRY_FILE
     - script:
         title: Detect readme-generator doc sections
         inputs:
@@ -48,6 +80,10 @@ workflows:
         - git_remote_url: $BITRISEIO_BASE_REPOSITORY_URL # default URL detection doesn't work because of Unified CI
         - git_token: $PIPELINE_GITHUB_ACCESS_TOKEN # defined as a secret in Unified CI project
     - bundle::golangci-lint:
+        run_if: |-
+          {{ enveq "STEPS_CHECK_GO_MODULE" "true" }}
         inputs:
         - golangci_lint_version: 2.11.4
-    - bundle::go-test: {}
+    - bundle::go-test:
+        run_if: |-
+          {{ enveq "STEPS_CHECK_GO_MODULE" "true" }}
